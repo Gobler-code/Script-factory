@@ -8,7 +8,12 @@ load_dotenv()
 
 api_key = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=api_key)
-model = genai.GenerativeModel("gemini-2.5-flash")
+model = genai.GenerativeModel(
+    "gemini-2.5-flash", 
+     generation_config= genai.GenerationConfig(
+     temperature = 0.3,
+     response_mime_type ='application/json'
+     ))
 
 def write_script(research_data):
   prompt = f""" 
@@ -31,5 +36,6 @@ Production Matrix Formatting: Every script must be generated as a highly detaile
 
 research_data = asyncio.run(research("Theranos scandal"))
 write_script(research_data)
+
 
 
