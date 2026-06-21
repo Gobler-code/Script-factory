@@ -1,19 +1,21 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
-from researcher import research
+from agents.researcher import research
 import asyncio
+from pydantic import BaseModel,Field
+from typing import List
 import os
 load_dotenv()
 
+class ScriptSegment(BaseModel):
+  voiceover:str = Field(description="CRITICAL PRIORITY (90% effort). Premium, rhythmic, word-for-word narrative text. Bold key words.")
+  rough_visual_cue: str = Field(description="BONUS: A microscopic, 3-5 word placeholder visual cue for context. Keep it ultra-brief.")
+  rough_sfx_trigger: str = Field(description="BONUS: A simple 1-2 word audio trigger keyword (e.g., [Sub drop], [Glitch noise]).")
 
-api_key = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=api_key)
-model = genai.GenerativeModel(
-    "gemini-2.5-flash", 
-     generation_config= genai.GenerationConfig(
-     temperature = 0.3,
-     response_mime_type ='application/json'
-     ))
+
+
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def write_script(research_data):
   prompt = f""" 
@@ -43,13 +45,23 @@ Return ONLY a valid JSON array. Each object must follow this exact structure:
     
  
       """
-  response = model.generate_content(prompt)
+
+  response =client.models.generate_content(
+    model='gemini-2.5-flash',
+    contents=prompt,
+    config=types.GenerateContentConfig(
+     temperature = 0.3,
+     response_mime_type ='application/json',
+     response_schema= list[ScriptSegment]
+    )
+)
+
   print(response.text)
   return response.text
 
-
-research_data = asyncio.run(research("Theranos scandal"))
-write_script(research_data)
+if __name__ == "__main__":
+    research_data = asyncio.run(research("CrowdStrike outage"))
+    write_script(research_data)
 
 
 
