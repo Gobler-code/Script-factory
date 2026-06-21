@@ -1,4 +1,8 @@
-def introduce(name):
-    return f"My name is {name} and I am building scriptfactory" 
+from agents.researcher import research
+from agents.scriptwriter import write_script
+import asyncio
 
-print(introduce("Claude"))
+topic = "CrowdStrike outage"
+research_data = asyncio.run(research(topic))
+
+write_script(research_data)
