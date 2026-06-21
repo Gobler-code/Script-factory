@@ -15,6 +15,6 @@ async def research(topic):
     response = client.search(topic)
     return response
 
-print(asyncio.run(research("Theranos scandal")))
+print(asyncio.run(research("CrowdStrike outage")))
   
   
