@@ -1,22 +1,18 @@
+from pydantic import BaseModel
+class Person:
+    def __init__(self, name ,age):
+        self.name = name
+        self.age = age
 
-import requests
-disaster = {
-    "name": "Chernobyl",
-    "year": 1986,
-    "country" :"Ukraine"
-}
-print(disaster["name"])
+class PersonModel(BaseModel):
+    name:str
+    age: int
 
-for disasters in disaster :
-    print(disaster)
+p = Person("claude" ,5)
+p2= Person("claude2" ,"three")
+p3 = PersonModel(name="claude", age=3)
 
-if( disaster["year"]>2000):
-    print("modern disaster")
-else:
-    print("old disaster")
 
-try:
-    response = requests.get("https://example.com")
-    print(response.text)
-except Exception as e:
-    print(e)
+print(p.name)
+print(p2.name)
+print(p3)
