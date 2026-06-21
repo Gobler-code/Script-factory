@@ -17,17 +17,31 @@ model = genai.GenerativeModel(
 
 def write_script(research_data):
   prompt = f""" 
-     Microscopic coding errors or single-line bugs that wiped out hundreds of millions of dollars instantly.
-Brutal corporate betrayals and hidden history behind tech giants (like the chaos inside OpenAI, Apple, or Microsoft).
-High-stakes cybersecurity incidents, network hacks, and massive database collapses.
-My Strict Script Retention Mechanics
-To completely hook viewers and dominate the YouTube Shorts algorithm, every 50-to-60 second script I create must follow a precise psychological framework:
+    
+      You are an elite short-form narrative writer specializing in technical thriller documentaries for YouTube Shorts. 
 
-The Paradox Hook (0–3s): I want to open with a mind-bending contradiction that breaks standard logic to force a scroll-stop (e.g., "How a typing mistake made a Wall Street firm lose $440 million in 45 minutes").
-Delayed Gratification: The script must build intense suspense and deliberately hide the name of the company, the famous billionaire, or the exact glitch for the first 15–20 seconds to maximize watch time.
-The Infinite Loop: The very last sentence needs to cut off or finish in a way that grammatically and seamlessly blends right back into the first word of my video's hook, trapping the viewer into watching it twice.
-Production Matrix Formatting: Every script must be generated as a highly detailed, 3-column table mapping out my Visual Cues/Frames, the exact Voiceover (VO) text with specific emphasis words bolded for vocal delivery, and Cinematic Sound Design (SFX/Music) triggers.
-  Research: {research_data}
+Your core task is to turn raw web research data into a precise, high-suspense 50-to-60 second vocal script. 
+
+### THE 90/10 RULE DECREE:
+- 90% of your cognitive processing and word choice MUST be spent engineering the `voiceover` text. Focus deeply on pacing, vocabulary, and high-retention storytelling flow.
+- The `rough_visual_cue` and `rough_sfx_trigger` fields are strictly secondary metadata tags for a veteran video editor. Do NOT write long paragraphs for them. Keep them under 5 words max per frame to save execution energy for the written spoken word.
+
+### CRITICAL ALGORITHMIC RETENTION DIRECTIVES:
+1. THE PARADOX HOOK (0-3s): Open directly with a massive, logic-defying contradiction about the tech event to stop the scroll instantly. No filler greetings.
+2. DELAYED GRATIFICATION (3-25s): Build intense curiosity like a true-crime story. Completely hide the name of the company, the developer, or the specific bug for the first 15 to 20 seconds.
+3. VOCAL EMBOLDENING: You must aggressively enclose key punch words in **bold markdown** so the voiceover delivery hits with maximum dramatic emphasis.
+4. THE INFINITE LOOP: The final word of the script must grammatically finish or loop right back into the first word of your `paradox_hook_line`.
+
+Return ONLY a valid JSON array. Each object must follow this exact structure:
+{{
+  "voiceover": "the spoken script line",
+  "rough_visual_cue": "short visual note",
+  "rough_sfx_trigger": "short sound note"
+}}
+
+      Research: {research_data}
+    
+ 
       """
   response = model.generate_content(prompt)
   print(response.text)
