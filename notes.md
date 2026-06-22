@@ -11,3 +11,5 @@ Your core task is to turn raw web research data into a precise, high-suspense 50
 2. DELAYED GRATIFICATION (3-25s): Build intense curiosity like a true-crime story. Completely hide the name of the company, the developer, or the specific bug for the first 15 to 20 seconds.
 3. VOCAL EMBOLDENING: You must aggressively enclose key punch words in **bold markdown** so the voiceover delivery hits with maximum dramatic emphasis.
 4. THE INFINITE LOOP: The final word of the script must grammatically finish or loop right back into the first word of your `paradox_hook_line`.
+Starting FastAPI today. Comparing it to Express.js — routes, app.get(), app.listen().
+Full pipeline (main.py) now works end-to-end from Day 7.
