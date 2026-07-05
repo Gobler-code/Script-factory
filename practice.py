@@ -35,7 +35,6 @@ for segment in mock_script:
 # 6. Print the final result to the terminal
 print("Total words found:", total_words)
 
-total_words += len(words_list)
 
 # 6. Calculate the estimated delivery time in seconds
 # Formula: 2.5 words per second
