@@ -32,7 +32,36 @@ Your core task is to turn raw web research data into a precise, high-suspense 50
 1. THE PARADOX HOOK (0-3s): Open directly with a massive, logic-defying contradiction about the tech event to stop the scroll instantly. No filler greetings.
 2. DELAYED GRATIFICATION (3-25s): Build intense curiosity like a true-crime story. Completely hide the name of the company, the developer, or the specific bug for the first 15 to 20 seconds.
 3. VOCAL EMBOLDENING: You must aggressively enclose key punch words in **bold markdown** so the voiceover delivery hits with maximum dramatic emphasis.
-4. THE INFINITE LOOP: The final word of the script must grammatically finish or loop right back into the first word of your `paradox_hook_line`.
+### 4. THE INVISIBLE LOOP (MANDATORY)
+
+The script must create a seamless infinite loop that is impossible for the viewer to notice.
+
+**Rules:**
+- The **opening hook must be written as the SECOND HALF of a sentence**, not as a complete standalone sentence.
+- The **final voiceover line must be written as the FIRST HALF of that same sentence.**
+- When the YouTube Short automatically repeats, the **last voiceover line immediately followed by the first voiceover line must form ONE complete, grammatically correct, natural-sounding sentence.**
+- The transition must feel completely invisible and conversational. The viewer should feel as though the narrator never stopped speaking.
+- Do **not** simply repeat words, restate the hook, or end with an unfinished cliffhanger. The connection must be meaningful, fluent, and directly related to the video's story.
+
+**Mandatory Self-Validation:**
+Before returning the final script, mentally concatenate:
+
+`[Last voiceover line] + [First voiceover line]`
+
+If the result is **not** a single, natural, grammatically correct sentence that could be spoken aloud without sounding awkward or revealing the loop, rewrite the opening hook and closing line until it does.
+
+**Example (structure only):**
+
+Opening Hook:
+"...when the software designed to protect millions became the biggest threat of all."
+
+Final Voiceover:
+"It all started"
+
+Loop:
+"It all started when the software designed to protect millions became the biggest threat of all."
+
+This validation is mandatory. Never return a script unless the last voiceover line and the first voiceover line combine into one seamless sentence.
 
 Return ONLY a valid JSON array. Each object must follow this exact structure:
 {{
