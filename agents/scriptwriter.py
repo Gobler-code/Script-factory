@@ -88,9 +88,9 @@ Return ONLY a valid JSON array. Each object must follow this exact structure:
   print(response.text)
   return response.text
 
-if __name__ == "__main__":
-    research_data = asyncio.run(research("CrowdStrike outage"))
-    write_script(research_data)
+# if __name__ == "__main__":
+    # research_data = asyncio.run(research("CrowdStrike outage"))
+    # write_script(research_data)
 
 
 

@@ -15,6 +15,7 @@ async def research(topic):
     response = client.search(topic)
     return response
 
-print(asyncio.run(research("CrowdStrike outage")))
+# if __name__ == "__main__":
+    # print(asyncio.run(research("CrowdStrike outage")))
   
   
