@@ -12,5 +12,7 @@ async def generate(topic):
     research_data = await research(topic)
     script = write_script(research_data)
     response = json.loads(script)
-    review_script(response)
-    return response
+    review = review_script(response)
+    return {"review":review , "response": response}
+    
+

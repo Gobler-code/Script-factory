@@ -13,3 +13,6 @@ def review_script(script):
     print("--- Script Stats ---")
     print(f"Total Words: {total_words}")
     print(f"Estimated Duration: {estimated_seconds:.2f} seconds")
+
+    return{"total words": total_words,
+           "Estimated Duration": estimated_seconds}
