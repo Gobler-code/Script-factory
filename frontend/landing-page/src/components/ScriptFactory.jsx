@@ -156,10 +156,12 @@ export default function ScriptFactory() {
     setErrorMsg("");
 
     try {
-      const result = await mockGenerateScript();
-      setScenes(result.scenes);
-      setWordCount(result.wordCount);
-      setEstimatedSeconds(result.estimatedSeconds);
+      const URL = `http://127.0.0.1:8000/generate?topic=${topic}`
+      const result = await fetch(URL)
+      const data = await result.json()
+      setScenes(data.response);
+      setWordCount(data.review["total words"]);
+      setEstimatedSeconds(data.review["Estimated Duration"]);
       setStatus("done");
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong.");
