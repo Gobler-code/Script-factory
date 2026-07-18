@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
+import  CaptionGenerator from "./CaptionGenerator";
 
 const HEADLINE = "SCRIPT FACTORY";
 
@@ -63,7 +64,8 @@ export default function ScriptFactory() {
   const [scenes, setScenes] = useState([]);
   const [wordCount, setWordCount] = useState(0);
   const [estimatedSeconds, setEstimatedSeconds] = useState(0);
-
+  const [drawer, setDrawer] = useState(false)
+ 
   const headlineRef = useRef(null);
   const subRef = useRef(null);
   const searchRef = useRef(null);
@@ -72,6 +74,7 @@ export default function ScriptFactory() {
   const wordDisplayRef = useRef(null);
   const timeDisplayRef = useRef(null);
   const tweenTargets = useRef({ words: 0, seconds: 0 });
+  
 
   // Hero entrance
   useEffect(() => {
@@ -168,6 +171,7 @@ export default function ScriptFactory() {
       setStatus("error");
     }
   }
+  const captionScript = scenes.map((scene) => scene.voiceover).join(" ")
 
   return (
     <div className="min-h-screen bg-[#0a0a09] text-[#f3f1ea] font-sans relative">
@@ -307,6 +311,10 @@ export default function ScriptFactory() {
               ))}
             </>
           )}
+
+         
+          <button onClick={() => setDrawer(true)} className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 disabled:opacity-35 disabled:hover:translate-x-0 transition-all py-1.5 whitespace-nowrap" >Generate Caption</button>
+           {drawer && <CaptionGenerator initialScript={captionScript} />}
         </section>
       )}
     </div>
