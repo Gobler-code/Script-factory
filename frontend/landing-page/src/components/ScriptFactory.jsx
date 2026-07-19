@@ -43,6 +43,8 @@ function formatClock(totalSeconds) {
 
 export default function ScriptFactory() {
   const [topic, setTopic] = useState("");
+  // Track the exact topic string that is currently rendered on screen
+  const [activeTopic, setActiveTopic] = useState(""); 
   const [status, setStatus] = useState("idle"); // idle | loading | error | done
   const [errorMsg, setErrorMsg] = useState("");
   const [scenes, setScenes] = useState([]);
@@ -132,19 +134,25 @@ export default function ScriptFactory() {
   async function runSearch(e) {
     e?.preventDefault();
     const trimmed = topic.trim();
-    if (!trimmed || status === "loading") return;
+    
+    // Guard Clause: Block request if empty, loading, OR matches the active visible topic
+    if (!trimmed || status === "loading" || trimmed.toLowerCase() === activeTopic.toLowerCase()) return;
 
     setStatus("loading");
     setErrorMsg("");
-    setShowCaptionPane(false); // Reset split state on new searches
+    setShowCaptionPane(false); 
 
     try {
-      const URL = `http://127.0.0.1:8000/generate?topic=${encodeURIComponent(topic)}`;
+      const URL = `http://127.0.0.1:8000/generate?topic=${encodeURIComponent(trimmed)}`;
       const result = await fetch(URL);
       const data = await result.json();
+      
       setScenes(data.response);
       setWordCount(data.review["total words"]);
       setEstimatedSeconds(data.review["Estimated Duration"]);
+      
+      // Save the topic successfully generated to lock duplicate requests
+      setActiveTopic(trimmed);
       setStatus("done");
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong.");
@@ -153,10 +161,14 @@ export default function ScriptFactory() {
   }
 
   const captionScript = scenes.map((scene) => scene.voiceover).join(" ");
+  
+  // Dynamic button parameters
+  const isDuplicate = topic.trim().toLowerCase() === activeTopic.toLowerCase() && status === "done";
+  const isSubmitDisabled = status === "loading" || !topic.trim() || isDuplicate;
 
   return (
     <div className="min-h-screen bg-[#0a0a09] text-[#f3f1ea] font-sans relative overflow-x-hidden">
-      {/* Hero Header Area - Fades slightly out when split layout is active to maintain focus */}
+      {/* Hero Header Area */}
       <section className={`transition-opacity duration-300 ${showCaptionPane ? "opacity-40" : "opacity-100"} flex flex-col items-center justify-center px-6 pt-[8vh] pb-6 text-center relative z-10`}>
         <div className="font-mono text-[11px] tracking-[0.32em] uppercase text-[#8f8c82] mb-7">
           <span className="text-[#f3f1ea]">●</span> script generation
@@ -194,10 +206,10 @@ export default function ScriptFactory() {
             />
             <button
               type="submit"
-              disabled={status === "loading" || !topic.trim()}
-              className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 disabled:opacity-35 disabled:hover:translate-x-0 transition-all py-1.5 whitespace-nowrap"
+              disabled={isSubmitDisabled}
+              className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 disabled:opacity-35 disabled:hover:translate-x-0 transition-all py-1.5 whitespace-nowrap uppercase"
             >
-              {status === "loading" ? "WRITING…" : "GENERATE →"}
+              {status === "loading" ? "WRITING…" : isDuplicate ? "ALREADY GENERATED" : "GENERATE →"}
             </button>
           </div>
           <div
@@ -207,6 +219,8 @@ export default function ScriptFactory() {
           >
             {status === "error"
               ? errorMsg
+              : isDuplicate
+              ? "This script is already loaded below."
               : status === "idle"
               ? "Press enter to send it to the backend."
               : "\u00A0"}
@@ -234,7 +248,6 @@ export default function ScriptFactory() {
               No scenes came back for this topic. Try rephrasing it.
             </div>
           ) : (
-            /* Split layout logic container handles normal centered view vs wide split grid layout */
             <div className={`grid gap-10 transition-all duration-300 items-start ${showCaptionPane ? "grid-cols-1 lg:grid-cols-2 max-w-[1600px] mx-auto" : "max-w-[760px] mx-auto grid-cols-1"}`}>
               
               {/* SCRIPT COLUMN PANEL */}
@@ -299,7 +312,6 @@ export default function ScriptFactory() {
               {/* CAPTIONS WORKSPACE SIDE PANEL */}
               {showCaptionPane && (
                 <div className="bg-[#111310] border border-[#f3f1ea]/10 rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 max-h-[75vh] flex flex-col">
-                  {/* Top Bar inside Caption view panel */}
                   <div className="flex items-center justify-between px-6 py-4 border-b border-[#f3f1ea]/10 bg-[#111310] shrink-0">
                     <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#8f8c82]">
                       Caption Generator Workspace
@@ -312,7 +324,6 @@ export default function ScriptFactory() {
                       ✕ CLOSE PANEL
                     </button>
                   </div>
-                  {/* Internal panel scroll view area */}
                   <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
                     <CaptionGenerator initialScript={captionScript} />
                   </div>
