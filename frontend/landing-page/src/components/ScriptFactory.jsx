@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
-import  CaptionGenerator from "./CaptionGenerator";
+import CaptionGenerator from "./CaptionGenerator";
 
 const HEADLINE = "SCRIPT FACTORY";
 
-// Placeholder data so the page works standalone. Swap runSearch() below to
-// call your real backend whenever it's ready — nothing else needs to change.
 const MOCK_SCENES = [
   {
     voiceover:
@@ -27,20 +25,6 @@ const MOCK_SCENES = [
   },
 ];
 
-async function mockGenerateScript() {
-  await new Promise((r) => setTimeout(r, 900)); // feel like a real request
-  const wordCount = MOCK_SCENES.reduce(
-    (t, s) => t + s.voiceover.replace(/\*\*/g, "").trim().split(/\s+/).length,
-    0
-  );
-  return {
-    scenes: MOCK_SCENES,
-    wordCount,
-    estimatedSeconds: Math.round((wordCount / 150) * 60),
-  };
-}
-
-/** Turns **bold** markers into <strong>, escaping everything else. */
 function renderVoiceover(text) {
   const escaped = String(text ?? "")
     .replace(/&/g, "&amp;")
@@ -64,7 +48,7 @@ export default function ScriptFactory() {
   const [scenes, setScenes] = useState([]);
   const [wordCount, setWordCount] = useState(0);
   const [estimatedSeconds, setEstimatedSeconds] = useState(0);
-  const [drawer, setDrawer] = useState(false)
+  const [showCaptionPane, setShowCaptionPane] = useState(false);
  
   const headlineRef = useRef(null);
   const subRef = useRef(null);
@@ -74,9 +58,8 @@ export default function ScriptFactory() {
   const wordDisplayRef = useRef(null);
   const timeDisplayRef = useRef(null);
   const tweenTargets = useRef({ words: 0, seconds: 0 });
-  
 
-  // Hero entrance
+  // Entrance animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       const letters = headlineRef.current?.querySelectorAll(".sf-letter");
@@ -99,13 +82,10 @@ export default function ScriptFactory() {
           "-=0.3"
         );
     });
-    // ctx.revert() (not tl.kill()) resets everything to its natural state,
-    // so if Strict Mode runs this effect twice in dev, nothing gets stuck
-    // at opacity: 0.
     return () => ctx.revert();
   }, []);
 
-  // Processing indicator loop
+  // Loading loop
   useEffect(() => {
     if (status !== "loading" || !processingBarRef.current) return;
     const tween = gsap.fromTo(
@@ -116,7 +96,7 @@ export default function ScriptFactory() {
     return () => tween.kill();
   }, [status]);
 
-  // Results entrance + count-up
+  // Results entrance count-ups
   useEffect(() => {
     if (status !== "done" || !resultsRef.current) return;
 
@@ -147,8 +127,7 @@ export default function ScriptFactory() {
         }
       },
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [status, scenes]);
+  }, [status, scenes, wordCount, estimatedSeconds]);
 
   async function runSearch(e) {
     e?.preventDefault();
@@ -157,11 +136,12 @@ export default function ScriptFactory() {
 
     setStatus("loading");
     setErrorMsg("");
+    setShowCaptionPane(false); // Reset split state on new searches
 
     try {
-      const URL = `http://127.0.0.1:8000/generate?topic=${topic}`
-      const result = await fetch(URL)
-      const data = await result.json()
+      const URL = `http://127.0.0.1:8000/generate?topic=${encodeURIComponent(topic)}`;
+      const result = await fetch(URL);
+      const data = await result.json();
       setScenes(data.response);
       setWordCount(data.review["total words"]);
       setEstimatedSeconds(data.review["Estimated Duration"]);
@@ -171,12 +151,13 @@ export default function ScriptFactory() {
       setStatus("error");
     }
   }
-  const captionScript = scenes.map((scene) => scene.voiceover).join(" ")
+
+  const captionScript = scenes.map((scene) => scene.voiceover).join(" ");
 
   return (
-    <div className="min-h-screen bg-[#0a0a09] text-[#f3f1ea] font-sans relative">
-      {/* Hero */}
-      <section className="min-h-screen flex flex-col items-center justify-center px-6 py-[8vh] text-center relative z-10">
+    <div className="min-h-screen bg-[#0a0a09] text-[#f3f1ea] font-sans relative overflow-x-hidden">
+      {/* Hero Header Area - Fades slightly out when split layout is active to maintain focus */}
+      <section className={`transition-opacity duration-300 ${showCaptionPane ? "opacity-40" : "opacity-100"} flex flex-col items-center justify-center px-6 pt-[8vh] pb-6 text-center relative z-10`}>
         <div className="font-mono text-[11px] tracking-[0.32em] uppercase text-[#8f8c82] mb-7">
           <span className="text-[#f3f1ea]">●</span> script generation
         </div>
@@ -195,8 +176,7 @@ export default function ScriptFactory() {
 
         <p ref={subRef} className="mt-6 max-w-[480px] text-base leading-relaxed text-[#8f8c82]">
           Give it a topic. Get back a{" "}
-          <em className="not-italic font-serif italic text-[#f3f1ea]">shot-ready</em> script —
-          voiceover, visual cues, and sound, scene by scene.
+          <em className="not-italic font-serif italic text-[#f3f1ea]">shot-ready</em> script.
         </p>
 
         <form ref={searchRef} onSubmit={runSearch} className="mt-14 w-[min(560px,88vw)]">
@@ -246,75 +226,101 @@ export default function ScriptFactory() {
         )}
       </section>
 
-      {/* Results */}
+      {/* Main Response Output Container */}
       {status === "done" && (
-        <section ref={resultsRef} className="relative z-10 max-w-[760px] mx-auto px-6 pb-36">
+        <section ref={resultsRef} className="w-full px-6 pb-36 relative z-10 transition-all duration-300">
           {scenes.length === 0 ? (
             <div className="text-center py-20 px-6 text-[#8f8c82] text-sm">
               No scenes came back for this topic. Try rephrasing it.
             </div>
           ) : (
-            <>
-              <div className="flex justify-between items-baseline border-t border-b border-[#f3f1ea]/10 py-4.5 px-1 mb-16 font-mono">
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">
-                    Est. runtime
-                  </span>
-                  <span className="text-xl tabular-nums text-[#f3f1ea]">
-                    <span ref={timeDisplayRef}>00:00</span>
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">
-                    Word count
-                  </span>
-                  <span className="text-xl tabular-nums text-[#f3f1ea]">
-                    <span ref={wordDisplayRef}>0</span>
-                  </span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">
-                    Scenes
-                  </span>
-                  <span className="text-xl tabular-nums text-[#f3f1ea]">{scenes.length}</span>
-                </div>
-              </div>
-
-              {scenes.map((scene, i) => (
-                <article
-                  key={i}
-                  className="sf-scene grid grid-cols-[88px_1fr] gap-7 py-10 border-b border-[#f3f1ea]/10 last:border-none opacity-0 translate-y-7 max-[640px]:grid-cols-1 max-[640px]:gap-3.5"
-                >
-                  <div className="font-mono text-[11px] tracking-[0.12em] uppercase text-[#55534c] pt-1.5 max-[640px]:flex max-[640px]:items-baseline max-[640px]:gap-2.5 max-[640px]:pt-0">
-                    SCENE
-                    <span className="block text-2xl text-[#8f8c82] tracking-normal mt-1.5 max-[640px]:mt-0 max-[640px]:inline">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
+            /* Split layout logic container handles normal centered view vs wide split grid layout */
+            <div className={`grid gap-10 transition-all duration-300 items-start ${showCaptionPane ? "grid-cols-1 lg:grid-cols-2 max-w-[1600px] mx-auto" : "max-w-[760px] mx-auto grid-cols-1"}`}>
+              
+              {/* SCRIPT COLUMN PANEL */}
+              <div className={`${showCaptionPane ? "bg-[#111310]/40 border border-[#f3f1ea]/10 rounded-lg p-6 lg:p-8 max-h-[75vh] overflow-y-auto" : ""}`}>
+                <div className="flex justify-between items-baseline border-t border-b border-[#f3f1ea]/10 py-4.5 px-1 mb-10 font-mono">
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">Est. runtime</span>
+                    <span className="text-xl tabular-nums text-[#f3f1ea]"><span ref={timeDisplayRef}>00:00</span></span>
                   </div>
-                  <div>
-                    <p
-                      className="font-serif italic text-[clamp(19px,2.6vw,24px)] leading-relaxed text-[#f3f1ea] mb-5 [&>strong]:not-italic [&>strong]:font-medium"
-                      dangerouslySetInnerHTML={renderVoiceover(scene.voiceover)}
-                    />
-                    <div className="flex flex-wrap gap-x-7 gap-y-2.5">
-                      <div className="flex gap-2.5 items-baseline font-mono text-xs">
-                        <span className="text-[#55534c] tracking-[0.14em]">VISUAL /</span>
-                        <span className="text-[#8f8c82]">{scene.rough_visual_cue}</span>
-                      </div>
-                      <div className="flex gap-2.5 items-baseline font-mono text-xs">
-                        <span className="text-[#55534c] tracking-[0.14em]">SFX /</span>
-                        <span className="text-[#8f8c82]">{scene.rough_sfx_trigger}</span>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">Word count</span>
+                    <span className="text-xl tabular-nums text-[#f3f1ea]"><span ref={wordDisplayRef}>0</span></span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">Scenes</span>
+                    <span className="text-xl tabular-nums text-[#f3f1ea]">{scenes.length}</span>
+                  </div>
+                </div>
+
+                {scenes.map((scene, i) => (
+                  <article
+                    key={i}
+                    className="sf-scene grid grid-cols-[70px_1fr] gap-5 py-8 border-b border-[#f3f1ea]/10 last:border-none translate-y-7 max-[640px]:grid-cols-1 max-[640px]:gap-2"
+                  >
+                    <div className="font-mono text-[11px] tracking-[0.12em] uppercase text-[#55534c] pt-1.5 max-[640px]:flex max-[640px]:items-baseline max-[640px]:gap-2.5 max-[640px]:pt-0">
+                      SCENE
+                      <span className="block text-xl text-[#8f8c82] tracking-normal mt-1 max-[640px]:mt-0 max-[640px]:inline">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                    </div>
+                    <div>
+                      <p
+                        className="font-serif italic text-[clamp(17px,2.2vw,21px)] leading-relaxed text-[#f3f1ea] mb-4 [&>strong]:not-italic [&>strong]:font-medium"
+                        dangerouslySetInnerHTML={renderVoiceover(scene.voiceover)}
+                      />
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex gap-2 items-baseline font-mono text-xs">
+                          <span className="text-[#55534c] tracking-[0.14em] shrink-0">VISUAL /</span>
+                          <span className="text-[#8f8c82]">{scene.rough_visual_cue}</span>
+                        </div>
+                        <div className="flex gap-2 items-baseline font-mono text-xs">
+                          <span className="text-[#55534c] tracking-[0.14em] shrink-0">SFX /</span>
+                          <span className="text-[#8f8c82]">{scene.rough_sfx_trigger}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </article>
-              ))}
-            </>
-          )}
+                  </article>
+                ))}
 
-         
-          <button onClick={() => setDrawer(true)} className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 disabled:opacity-35 disabled:hover:translate-x-0 transition-all py-1.5 whitespace-nowrap" >Generate Caption</button>
-           {drawer && <CaptionGenerator initialScript={captionScript} />}
+                {!showCaptionPane && (
+                  <div className="mt-10 flex justify-center">
+                    <button
+                      onClick={() => setShowCaptionPane(true)}
+                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap"
+                    >
+                      GENERATE CAPTION →
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* CAPTIONS WORKSPACE SIDE PANEL */}
+              {showCaptionPane && (
+                <div className="bg-[#111310] border border-[#f3f1ea]/10 rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 max-h-[75vh] flex flex-col">
+                  {/* Top Bar inside Caption view panel */}
+                  <div className="flex items-center justify-between px-6 py-4 border-b border-[#f3f1ea]/10 bg-[#111310] shrink-0">
+                    <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#8f8c82]">
+                      Caption Generator Workspace
+                    </span>
+                    <button
+                      onClick={() => setShowCaptionPane(false)}
+                      aria-label="Back to single column view"
+                      className="font-mono text-xs text-[#8f8c82] hover:text-[#f3f1ea] transition-colors border border-[#f3f1ea]/20 px-2.5 py-1 rounded bg-transparent hover:bg-[#f3f1ea]/5"
+                    >
+                      ✕ CLOSE PANEL
+                    </button>
+                  </div>
+                  {/* Internal panel scroll view area */}
+                  <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+                    <CaptionGenerator initialScript={captionScript} />
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
         </section>
       )}
     </div>
