@@ -40,6 +40,15 @@ function formatClock(totalSeconds) {
   const ss = s % 60;
   return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 }
+function downloadText(filename, text) {
+  const blob = new Blob([text], { type: "text/plain" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function ScriptFactory() {
   const [topic, setTopic] = useState("");
@@ -51,6 +60,7 @@ export default function ScriptFactory() {
   const [wordCount, setWordCount] = useState(0);
   const [estimatedSeconds, setEstimatedSeconds] = useState(0);
   const [showCaptionPane, setShowCaptionPane] = useState(false);
+  const [downloadScript, setDownloadScript] = useState(false)
  
   const headlineRef = useRef(null);
   const subRef = useRef(null);
@@ -297,6 +307,29 @@ export default function ScriptFactory() {
                   </article>
                 ))}
 
+               {!downloadScript && (
+                  <div className="mt-10 flex justify-center">
+                    <button
+                      onClick={() => setDownloadScript(true)}
+                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap"
+                    >
+                      Download Script 
+                    </button>
+                  </div>
+                )}
+                
+                {downloadScript && (
+                 <div className="mt-4 flex gap-4 justify-center">
+                 <button onClick={() => downloadText("voiceover.txt", scenes.map((scene) => scene.voiceover).join(" "))}
+                         className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap">
+                      Voiceover only
+                 </button>
+                 <button onClick={() => downloadText("full_script.txt", scenes.map((scene, i) => `Voiceover: ${scene.voiceover}\nVisual: ${scene.rough_visual_cue}\nSFX: ${scene.rough_sfx_trigger}`).join("\n\n"))}
+                         className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap">
+                       Full script
+                 </button>
+                 </div>
+              )}
                 {!showCaptionPane && (
                   <div className="mt-10 flex justify-center">
                     <button
@@ -309,7 +342,8 @@ export default function ScriptFactory() {
                 )}
               </div>
 
-              {/* CAPTIONS WORKSPACE SIDE PANEL */}
+             
+             {/* CAPTIONS WORKSPACE SIDE PANEL */}
               {showCaptionPane && (
                 <div className="bg-[#111310] border border-[#f3f1ea]/10 rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 max-h-[75vh] flex flex-col">
                   <div className="flex items-center justify-between px-6 py-4 border-b border-[#f3f1ea]/10 bg-[#111310] shrink-0">
