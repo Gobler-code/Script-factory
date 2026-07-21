@@ -321,11 +321,11 @@ export default function ScriptFactory() {
                 {downloadScript && (
                  <div className="mt-4 flex gap-4 justify-center">
                  <button onClick={() => downloadText("voiceover.txt", scenes.map((scene) => scene.voiceover).join(" "))}
-                         className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap">
+                        className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 border-2 border-white hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-2 px-3 whitespace-nowrap">
                       Voiceover only
                  </button>
                  <button onClick={() => downloadText("full_script.txt", scenes.map((scene, i) => `Voiceover: ${scene.voiceover}\nVisual: ${scene.rough_visual_cue}\nSFX: ${scene.rough_sfx_trigger}`).join("\n\n"))}
-                         className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap">
+                         className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 border-2 border-white hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-2 px-3 whitespace-nowrap">
                        Full script
                  </button>
                  </div>
