@@ -2,257 +2,554 @@
 
 **A Full-Stack AI Pipeline for Generating Short-Form Technical Documentary Scripts**
 
-An intelligent automation system that transforms trending topics into engaging YouTube Shorts scripts — end to end, from a live web app down to the underlying AI agents. Script Factory combines real-time web research, AI-powered narrative writing, and automatic script analysis, all served through a FastAPI backend and a React landing page with a built-in caption/subtitle generator.
+ An intelligent automation system that transforms trending topics into engaging YouTube Shorts scripts — end to end, from a live web app down to the underlying AI agents. Script Factory combines real-time web research, AI-powered narrative writing, and automatic script analysis, all served through a FastAPI backend and a React landing page with a built-in caption/subtitle generator and AI voiceover — all through a modern React web interface powered by a FastAPI backend.
+
+The goal is simple:
+
+> **Turn an idea into a narrated, production-ready YouTube Short.**
 
 ---
 
 ## 📋 Table of Contents
 
-- [Overview](#overview)
-- [Features](#features)
-- [Project Architecture](#project-architecture)
-- [Project Structure](#project-structure)
-- [Tech Stack](#tech-stack)
-- [Installation & Setup](#installation--setup)
-- [Usage](#usage)
-- [Key Components](#key-components)
-- [Progress Made](#progress-made)
-- [API Requirements](#api-requirements)
-- [Future Enhancements](#future-enhancements)
+* [Overview](#-overview)
+* [Core Workflow](#-core-workflow)
+* [Features](#-features)
+* [Project Architecture](#-project-architecture)
+* [Project Structure](#-project-structure)
+* [Tech Stack](#-tech-stack)
+* [Installation & Setup](#-installation--setup)
+* [Usage](#-usage)
+* [API Endpoints](#-api-endpoints)
+* [Key Components](#-key-components)
+* [Voiceover System](#-voiceover-system)
+* [Progress](#-progress)
+* [API Requirements](#-api-requirements)
+* [Future Enhancements](#-future-enhancements)
+* [Contributing](#-contributing)
+* [License](#-license)
 
 ---
 
 ## 🎯 Overview
 
-Script Factory is a comprehensive AI pipeline designed to automate the creation of short-form technical documentary scripts. The system takes any trending topic or tech event as input and produces a structured, narrative-driven script optimized for YouTube Shorts — now accessible through a live, animated web frontend instead of just the command line.
+Script Factory is a full-stack AI content creation pipeline designed specifically for short-form technical documentaries and YouTube Shorts.
 
-**Core Workflow:**
-1. **Research Phase** → Gathers real-time data from the web using the Tavily API
-2. **Writing Phase** → Generates engaging, high-retention scripts using Google Gemini AI
-3. **Review Phase** → Analyzes the generated script for word count and estimated runtime
-4. **Serving Phase** → Exposes the whole pipeline through a FastAPI endpoint
-5. **Presentation Phase** → A React landing page sends the topic, renders the script scene-by-scene, and lets the user generate downloadable captions
+Instead of manually researching a topic, writing a script, calculating its duration, creating captions, and recording narration, Script Factory brings the entire process into one workflow.
+
+A user enters a topic and the system can:
+
+1. Research the topic using real-time web data
+2. Generate a structured, narrative-driven script
+3. Analyze word count and estimated runtime
+4. Generate timed subtitles
+5. Convert the generated script into AI voiceover
+6. Choose from multiple narrator voices
+7. Preview and control the generated narration
+8. Download the final voiceover as an MP3
+
+The system is built around a modular AI-agent architecture, making it possible to expand the pipeline with additional agents and production tools over time.
+
+---
+
+## 🔄 Core Workflow
+
+```text
+                    ┌───────────────────┐
+                    │   ENTER TOPIC     │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │  RESEARCH AGENT   │
+                    │   Tavily Search   │
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │ SCRIPTWRITER AGENT│
+                    │   Gemini 2.5 Flash│
+                    └─────────┬─────────┘
+                              │
+                              ▼
+                    ┌───────────────────┐
+                    │  REVIEWER AGENT   │
+                    │ Word Count + Time  │
+                    └─────────┬─────────┘
+                              │
+                 ┌────────────┴────────────┐
+                 │                         │
+                 ▼                         ▼
+       ┌───────────────────┐     ┌───────────────────┐
+       │ CAPTION GENERATOR │     │  NARRATOR AGENT   │
+       │     SRT / ASS     │     │     Edge TTS      │
+       └───────────────────┘     └─────────┬─────────┘
+                                           │
+                                           ▼
+                                 ┌───────────────────┐
+                                 │ AUDIO PLAYER      │
+                                 │ Play / Seek / Time │
+                                 └─────────┬─────────┘
+                                           │
+                                           ▼
+                                 ┌───────────────────┐
+                                 │   DOWNLOAD MP3    │
+                                 └───────────────────┘
+```
 
 ---
 
 ## ✨ Features
 
-### 🔍 **Intelligent Web Research**
-- Real-time data collection using the Tavily API
-- Asynchronous research operations for efficiency
-- Comprehensive fact gathering on any topic
+### 🔍 Intelligent Web Research
 
-### 🎨 **Advanced Script Generation**
-- AI-powered narrative writing using Google Gemini 2.5 Flash
-- Optimized for short-form content (50-60 seconds)
-- Technical thriller storytelling approach
-- JSON-structured output for easy integration
+* Real-time topic research using the Tavily API
+* Asynchronous research operations
+* Collects relevant information before script generation
+* Allows the AI writer to build stories from current information
 
-### 📊 **Automatic Script Review**
-- New **Reviewer Agent** calculates total word count from the generated script
-- Estimates spoken runtime (using a words-per-second speaking rate)
-- Surfaces both metrics through the API so the frontend can display them live
+---
 
-### 🌐 **Live API Layer**
-- FastAPI server (`api.py`) exposes a `/generate` endpoint
-- Ties together research → writing → review in a single request
-- CORS-enabled for local frontend development (`localhost:5173`)
+### ✍️ AI Script Generation
 
-### 🖥️ **React Frontend (Landing Page)**
-- Built with React 19 + Vite + Tailwind CSS v4 + GSAP animations
-- Type a topic, hit generate, and watch the script stream in scene-by-scene
-- Animated word-count and runtime counters
-- Duplicate-request guard so the same topic can't be regenerated needlessly
-- Download the finished script as plain text (voiceover-only or full script with visual/SFX cues)
+* Powered by Google Gemini 2.5 Flash
+* Generates structured JSON script segments
+* Optimized for short-form content
+* Technical thriller storytelling approach
+* Designed around high-retention narrative principles
+* Includes voiceover, visual cues, and SFX triggers
 
-### 💬 **Built-In Caption Generator**
-- New `CaptionGenerator` component turns any script into timed captions
-- Pure client-side timing/formatting — no extra API calls
-- Detects "scene script" formatting automatically and strips VISUAL/SFX labels to isolate narration
-- Auto-highlights numbers, currency, percentages, and key words
-- Exports captions as **.srt** or **.ass** subtitle files
+Each generated scene contains:
 
-### 🎬 **Production-Ready Script Segments**
-Each script segment includes:
-- **Voiceover**: Premium, rhythmic, word-for-word narrative text with bold emphasis on key words
-- **Visual Cues**: Brief 3-5 word placeholders for video context
-- **Sound Effects Triggers**: Simple audio keywords for production enhancement
+```json
+{
+  "voiceover": "Narrative text for the scene",
+  "rough_visual_cue": "Server racks glitching",
+  "rough_sfx_trigger": "[System crash sound]"
+}
+```
 
-### 🎯 **Engagement Optimization**
-- **The Paradox Hook**: Logic-defying opening (0-3s) to stop scrolling
-- **Delayed Gratification**: True-crime-style buildup with hidden reveals (3-25s)
-- **Vocal Emboldening**: Strategic use of bold markdown for maximum delivery impact
-- **Invisible Loop Design**: The last line and the first line are engineered to combine into one seamless, natural sentence so the Short loops undetectably
+---
+
+### 📊 Automatic Script Review
+
+The Reviewer Agent analyzes the generated script and provides:
+
+* Total word count
+* Estimated spoken duration
+* Production-ready script metrics
+
+This allows creators to quickly determine whether the generated script fits the intended short-form video duration.
+
+---
+
+### 💬 Built-In Caption Generator
+
+The Caption Generator transforms generated scripts into subtitles.
+
+Features include:
+
+* Automatic narration extraction
+* Scene formatting detection
+* Removes visual and SFX labels
+* Automatic caption timing
+* Keyword highlighting
+* Number and currency highlighting
+* `.srt` subtitle export
+* `.ass` subtitle export
+
+The caption system runs client-side and does not require an additional API request.
+
+---
+
+### 🎙️ AI Voiceover Generation
+
+Script Factory can now transform the generated script directly into spoken narration.
+
+The new **Narrator** component takes the generated scenes and sends them to the FastAPI backend, where the Narrator Agent converts the script into audio using **Edge TTS**.
+
+### Available Voices
+
+| Voice     | Style                |
+| --------- | -------------------- |
+| **Guy**   | Deep, documentary    |
+| **Aria**  | Clear, neutral       |
+| **Ryan**  | British              |
+| **Jenny** | Warm, conversational |
+
+The user can select a voice before generating the narration.
+
+The complete voiceover workflow is:
+
+```text
+Generated Script
+      │
+      ▼
+Select Voice
+      │
+      ▼
+POST /narrate
+      │
+      ▼
+Narrator Agent
+      │
+      ▼
+Edge TTS
+      │
+      ▼
+MP3 Audio Buffer
+      │
+      ▼
+Base64 Audio Response
+      │
+      ▼
+Browser Audio Player
+      │
+      ├── Play / Pause
+      ├── Seek
+      ├── View Duration
+      └── Download MP3
+```
+
+---
+
+### 🎧 Custom Audio Player
+
+The Narrator component includes a custom audio interface that allows users to:
+
+* Play generated narration
+* Pause narration
+* Seek through the audio timeline
+* View current playback time
+* View total duration
+* Download generated narration as an MP3
+
+The generated audio is converted from Base64 into a browser-compatible Blob and played through the HTML5 Audio API.
+
+---
+
+### 🎬 Production-Ready Script Segments
+
+Each script segment contains:
+
+* **Voiceover** — The actual narration
+* **Visual Cue** — Suggested visual direction
+* **SFX Trigger** — Suggested sound effect
+
+This structure allows the same generated script to power multiple production stages:
+
+```text
+                 Script Segment
+                      │
+        ┌─────────────┼─────────────┐
+        ▼             ▼             ▼
+    Voiceover      Visual Cue     SFX Trigger
+        │
+        ├───────────────► AI Voiceover
+        │
+        └───────────────► Captions
+```
+
+---
+
+### 🎯 Engagement Optimization
+
+The ScriptWriter Agent uses several storytelling techniques:
+
+#### The Paradox Hook
+
+A logic-defying opening designed to stop viewers from scrolling.
+
+#### Delayed Gratification
+
+Information is revealed gradually to build tension and curiosity.
+
+#### Vocal Emboldening
+
+Important words can be emphasized using Markdown formatting.
+
+#### Invisible Loop Design
+
+The beginning and ending of the script are designed to connect naturally, helping create seamless looping Shorts.
 
 ---
 
 ## 🏗️ Project Architecture
 
-```
-┌─────────────────────────────────────────────────────────┐
-│              REACT FRONTEND (landing-page)               │
-│         Topic input → fetch("/generate") → render        │
-└────────────────────┬───────────────────────────────────┘
-                      │ HTTP GET /generate?topic=...
-                      ▼
-        ┌────────────────────────────┐
-        │      FastAPI (api.py)      │
-        └────────────┬───────────────┘
-                      │
-                      ▼
-        ┌────────────────────────────┐
-        │   Researcher Agent         │
-        │  (Tavily API Integration)  │
-        └────────────┬───────────────┘
-                      │ Research Data
-                      ▼
-        ┌────────────────────────────┐
-        │   ScriptWriter Agent       │
-        │  (Gemini 2.5 Flash API)    │
-        │  (Pydantic Validation)     │
-        └────────────┬───────────────┘
-                      │ Script Segments (JSON)
-                      ▼
-        ┌────────────────────────────┐
-        │     Reviewer Agent         │
-        │  (Word count + runtime)    │
-        └────────────┬───────────────┘
-                      │
-                      ▼
-        ┌────────────────────────────┐
-        │ { review, response } JSON  │
-        │ → rendered as scenes       │
-        │ → optional caption export  │
-        └────────────────────────────┘
+```text
+                         ┌─────────────────────────┐
+                         │      REACT FRONTEND      │
+                         │                         │
+                         │  Topic Input            │
+                         │  Script Renderer         │
+                         │  Caption Generator      │
+                         │  Narrator                │
+                         └────────────┬────────────┘
+                                      │
+                       ┌──────────────┴──────────────┐
+                       │                             │
+                       │ GET /generate               │ POST /narrate
+                       │                             │
+                       ▼                             ▼
+             ┌───────────────────┐         ┌───────────────────┐
+             │      FastAPI       │         │      FastAPI      │
+             │      API Layer     │         │      API Layer    │
+             └─────────┬─────────┘         └─────────┬─────────┘
+                       │                             │
+                       ▼                             ▼
+             ┌───────────────────┐         ┌───────────────────┐
+             │ Researcher Agent  │         │  Narrator Agent   │
+             │      Tavily       │         │     Edge TTS      │
+             └─────────┬─────────┘         └─────────┬─────────┘
+                       │                             │
+                       ▼                             ▼
+             ┌───────────────────┐         ┌───────────────────┐
+             │ ScriptWriter Agent│         │    MP3 Audio      │
+             │ Gemini 2.5 Flash  │         │   Base64 Response │
+             └─────────┬─────────┘         └─────────┬─────────┘
+                       │                             │
+                       ▼                             ▼
+             ┌───────────────────┐         ┌───────────────────┐
+             │  Reviewer Agent   │         │   Audio Player    │
+             │ Word Count / Time │         │  Play / Seek /    │
+             └─────────┬─────────┘         │  Download         │
+                       │                   └───────────────────┘
+                       ▼
+             ┌───────────────────┐
+             │ Script + Metrics  │
+             └───────────────────┘
 ```
 
 ---
 
 ## 📁 Project Structure
 
-```
+```text
 Script-factory/
+│
 ├── backend/
-│   ├── main.py                 # CLI pipeline orchestrator (research → write → review)
-│   ├── api.py                  # FastAPI server exposing /generate
-│   ├── practice.py             # Development/testing file with mock script data
-│   ├── notes.md                # Project notes and development log
+│   ├── main.py
+│   ├── api.py
+│   ├── practice.py
+│   ├── notes.md
+│   │
 │   └── agents/
-│       ├── researcher.py       # Web research agent (Tavily API)
-│       ├── scriptwriter.py     # Script generation agent (Gemini API)
-│       └── reviewer.py         # Word count + estimated runtime agent
+│       ├── researcher.py
+│       ├── scriptwriter.py
+│       ├── reviewer.py
+│       └── narrator.py
 │
 ├── frontend/
-│   └── landing-page/           # React + Vite + Tailwind + GSAP web app
+│   └── landing-page/
 │       ├── src/
 │       │   ├── App.jsx
 │       │   ├── main.jsx
+│       │   │
 │       │   └── components/
-│       │       ├── ScriptFactory.jsx     # Main topic input + scene renderer
-│       │       └── CaptionGenerator.jsx  # SRT/ASS caption export tool
+│       │       ├── ScriptFactory.jsx
+│       │       ├── CaptionGenerator.jsx
+│       │       └── Narrator.jsx
+│       │
 │       ├── public/
 │       ├── package.json
 │       └── vite.config.js
 │
-├── README.md                   # This file
-├── .env                         # API keys (not committed)
-└── .gitignore                   # Git ignore rules
+├── README.md
+├── .env
+└── .gitignore
 ```
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Component | Technology | Purpose |
-|-----------|-----------|---------|
-| **Backend Language** | Python 3.x | Core pipeline implementation |
-| **API Server** | FastAPI | Serves the pipeline over HTTP |
-| **Async** | asyncio | Asynchronous research operations |
-| **Web Research** | Tavily API | Real-time data collection |
-| **AI/LLM** | Google Gemini 2.5 Flash | Script generation |
-| **Validation** | Pydantic | Type safety & schema validation |
-| **Environment** | python-dotenv | Configuration management |
-| **HTTP (backend)** | requests | API communication |
-| **Frontend Framework** | React 19 | UI for topic input & script display |
-| **Build Tool** | Vite | Frontend dev server & bundler |
-| **Styling** | Tailwind CSS v4 | Utility-first styling |
-| **Animation** | GSAP | Entrance animations, counters, loading bar |
+| Component            | Technology              | Purpose                    |
+| -------------------- | ----------------------- | -------------------------- |
+| **Backend Language** | Python 3.x              | Core AI pipeline           |
+| **API Server**       | FastAPI                 | Backend API layer          |
+| **Async Processing** | asyncio                 | Asynchronous operations    |
+| **Web Research**     | Tavily API              | Real-time research         |
+| **AI / LLM**         | Google Gemini 2.5 Flash | Script generation          |
+| **Validation**       | Pydantic                | Structured data validation |
+| **Text-to-Speech**   | Edge TTS                | AI voiceover generation    |
+| **Environment**      | python-dotenv           | Environment configuration  |
+| **Frontend**         | React 19                | User interface             |
+| **Build Tool**       | Vite                    | Frontend development       |
+| **Styling**          | Tailwind CSS v4         | UI styling                 |
+| **Animation**        | GSAP                    | UI animations              |
+| **Audio**            | HTML5 Audio API         | Browser audio playback     |
 
 ---
 
 ## 💾 Installation & Setup
 
 ### Prerequisites
-- Python 3.8 or higher
-- Node.js 18+ and npm (for the frontend)
-- API Keys:
-  - Tavily API Key (for web research)
-  - Google Gemini API Key (for script generation)
 
-### Backend Setup
+* Python 3.8+
+* Node.js 18+
+* npm
+* Tavily API Key
+* Google Gemini API Key
+
+Edge TTS is used for voice generation through the `edge-tts` Python package.
+
+---
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/Gobler-code/Script-factory.git
+cd Script-factory
+```
+
+---
+
+### 2. Backend Setup
 
 ```bash
 cd backend
+```
 
-# Create virtual environment
+Create a virtual environment:
+
+```bash
 python -m venv venv
-venv\Scripts\activate      # Windows
-# source venv/bin/activate  # macOS/Linux
-
-# Install dependencies
-pip install requests tavily-python google-genai pydantic python-dotenv fastapi uvicorn
 ```
 
-Create a `.env` file in the `backend/` directory:
+Activate it on Windows:
+
+```bash
+venv\Scripts\activate
+```
+
+For macOS/Linux:
+
+```bash
+source venv/bin/activate
+```
+
+Install dependencies:
+
+```bash
+pip install requests tavily-python google-genai pydantic python-dotenv fastapi uvicorn edge-tts
+```
+
+---
+
+### 3. Configure Environment Variables
+
+Create a `.env` file in the backend directory:
+
 ```env
-TAVILY_API_KEY=your_tavily_api_key_here
-GEMINI_API_KEY=your_google_gemini_api_key_here
+TAVILY_API_KEY=your_tavily_api_key
+GEMINI_API_KEY=your_google_gemini_api_key
 ```
 
-Run the API server:
+Never commit your `.env` file to GitHub.
+
+---
+
+### 4. Start the Backend
+
+From the `backend` directory:
+
 ```bash
 uvicorn api:app --reload
 ```
-The API will be available at `http://127.0.0.1:8000`.
 
-### Frontend Setup
+The FastAPI backend will run at:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+### 5. Start the Frontend
+
+Open a new terminal:
 
 ```bash
 cd frontend/landing-page
 npm install
 npm run dev
 ```
-The app will be available at `http://localhost:5173`.
 
-> The frontend currently points at `http://127.0.0.1:8000/generate`, so make sure the backend is running first.
+The frontend will be available at:
+
+```text
+http://localhost:5173
+```
 
 ---
 
 ## 🚀 Usage
 
-### Via the Web App (recommended)
-1. Start the FastAPI backend (`uvicorn api:app --reload` from `backend/`)
-2. Start the frontend (`npm run dev` from `frontend/landing-page/`)
-3. Open `http://localhost:5173`, type a topic (e.g. *"the CrowdStrike outage"*), and hit **Generate**
-4. Scenes stream in with animated word-count and runtime counters
-5. Optionally open the **Caption Generator** panel to export `.srt` or `.ass` subtitles, or download the raw script as text
+### Step 1 — Enter a Topic
 
-### Via the CLI Pipeline
-```bash
-cd backend
-python main.py
+Enter a technology topic or recent event into the Script Factory interface.
+
+Example:
+
+```text
+The CrowdStrike outage
 ```
-This will:
-1. Research a hardcoded topic (`"CrowdStrike outage"`)
-2. Generate a JSON array of script segments
-3. Run the Reviewer Agent and print total word count + estimated duration
 
-### Via the API Directly
+---
+
+### Step 2 — Generate the Script
+
+The system:
+
+1. Researches the topic
+2. Generates the narrative
+3. Reviews the script
+4. Displays the scenes
+5. Shows word count and estimated duration
+
+---
+
+### Step 3 — Generate Captions
+
+Open the Caption Generator to:
+
+* Generate timed captions
+* Preview the subtitle structure
+* Export `.srt`
+* Export `.ass`
+
+---
+
+### Step 4 — Generate Voiceover
+
+Open the Narrator interface.
+
+1. Select a voice
+2. Review the generated script
+3. Click **Generate Voiceover**
+4. Wait for Edge TTS to generate the narration
+5. Play the generated audio
+6. Seek through the narration
+7. Download the MP3
+
+---
+
+## 🔌 API Endpoints
+
+### Generate Script
+
+```http
+GET /generate?topic=<topic>
+```
+
+Example:
+
 ```bash
 curl "http://127.0.0.1:8000/generate?topic=the%20CrowdStrike%20outage"
 ```
 
-**Response shape:**
+Response:
+
 ```json
 {
   "review": {
@@ -271,166 +568,471 @@ curl "http://127.0.0.1:8000/generate?topic=the%20CrowdStrike%20outage"
 
 ---
 
-## 🔧 Key Components
+### Generate Voiceover
 
-### 1. **Researcher Agent** (`backend/agents/researcher.py`)
-Handles real-time web research using the Tavily API.
-
-**Key Functions:**
-- `research(topic)` — async function to search and gather research data
-
-### 2. **ScriptWriter Agent** (`backend/agents/scriptwriter.py`)
-Transforms research data into engaging scripts using Gemini 2.5 Flash.
-
-**Pydantic Model:**
-```python
-class ScriptSegment(BaseModel):
-    voiceover: str = Field(description="Premium narrative text")
-    rough_visual_cue: str = Field(description="3-5 word visual placeholder")
-    rough_sfx_trigger: str = Field(description="1-2 word audio trigger")
+```http
+POST /narrate
 ```
 
-**Prompt Strategy:**
-- 90/10 Rule: 90% focus on voiceover quality
-- Paradox Hook: attention-grabbing opening
-- Delayed Gratification: story-building tension
-- Invisible Loop: the model self-validates that the last line + first line combine into one natural sentence before returning the script
+Request body:
 
-### 3. **Reviewer Agent** (`backend/agents/reviewer.py`) — *new*
-Analyzes a generated script and returns simple production metrics.
+```json
+{
+  "scenes": [
+    {
+      "voiceover": "The entire world woke up to a digital disaster.",
+      "rough_visual_cue": "Airport screens freezing",
+      "rough_sfx_trigger": "[System crash]"
+    }
+  ],
+  "voice": "en-US-GuyNeural"
+}
+```
 
-- Counts total words across all voiceover segments
-- Estimates spoken duration (words ÷ 2.5 words/sec)
-- Returns `{"total words": ..., "Estimated Duration": ...}`
+The endpoint:
 
-### 4. **API Layer** (`backend/api.py`) — *new*
-FastAPI app that ties the three agents together behind a single `GET /generate?topic=...` endpoint, with CORS enabled for the Vite dev server.
+1. Receives the generated scenes
+2. Extracts the voiceover text
+3. Removes Markdown emphasis
+4. Combines the scenes into one narration
+5. Sends the text to Edge TTS
+6. Generates audio
+7. Encodes the audio as Base64
+8. Returns the audio to the frontend
 
-### 5. **ScriptFactory Component** (`frontend/landing-page/src/components/ScriptFactory.jsx`) — *new*
-The main React UI: topic input, GSAP-animated headline/loading states, scene cards with bolded voiceover text, animated word/runtime counters, script download buttons, and a toggle into the caption workspace.
+Response:
 
-### 6. **CaptionGenerator Component** (`frontend/landing-page/src/components/CaptionGenerator.jsx`) — *new*
-A standalone, client-side caption/subtitle builder:
-- Auto-detects Script Factory's scene formatting and extracts just the narration
-- Times out cues based on words-per-minute and chunk size
-- Highlights numbers, currency, and key terms
-- Exports `.srt` and `.ass` subtitle files for editing software
+```json
+{
+  "audio_base64": "<base64 encoded audio>"
+}
+```
 
 ---
 
-## 📈 Progress Made
+## 🔧 Key Components
 
-### ✅ **Phase 1: Foundation (Completed)**
-- [x] Project structure established
-- [x] Tavily API integration for web research
-- [x] Google Gemini AI integration
-- [x] Asynchronous pipeline architecture
+### 1. Researcher Agent
 
-### ✅ **Phase 2: Core Pipeline (Completed)**
-- [x] Researcher agent fully functional
-- [x] ScriptWriter agent with advanced prompting
-- [x] Pydantic model validation for script segments
-- [x] End-to-end CLI pipeline working (main.py)
-- [x] JSON output with voiceovers, visual cues, and SFX
+**File:**
 
-### ✅ **Phase 3: Optimization (Completed)**
-- [x] Temperature control for script consistency
-- [x] Advanced narrative prompting (90/10 rule)
-- [x] Paradox Hook strategy implementation
-- [x] Delayed Gratification storytelling
-- [x] Vocal emboldening with markdown
-- [x] Invisible loop script design with self-validation step
+```text
+backend/agents/researcher.py
+```
 
-### ✅ **Phase 4: Script Review (Completed)**
-- [x] Reviewer agent for word count and estimated runtime
-- [x] Reviewer wired into both the CLI pipeline and the API
+Responsible for gathering real-time information using Tavily.
 
-### ✅ **Phase 5: API & Frontend (Completed)**
-- [x] FastAPI server exposing `/generate`
-- [x] CORS configured for local frontend development
-- [x] React + Vite + Tailwind + GSAP landing page
-- [x] Animated topic input, scene rendering, and live counters
-- [x] Script download (voiceover-only or full script)
-- [x] Duplicate-topic request guard
+---
 
-### ✅ **Phase 6: Caption Generator (Completed)**
-- [x] Client-side caption timing engine
-- [x] Automatic scene-script narration extraction
-- [x] Keyword/number highlighting
-- [x] SRT and ASS subtitle export
+### 2. ScriptWriter Agent
+
+**File:**
+
+```text
+backend/agents/scriptwriter.py
+```
+
+Transforms research data into a structured short-form documentary script using Gemini.
+
+The generated script follows a defined structure:
+
+```python
+class ScriptSegment(BaseModel):
+    voiceover: str
+    rough_visual_cue: str
+    rough_sfx_trigger: str
+```
+
+---
+
+### 3. Reviewer Agent
+
+**File:**
+
+```text
+backend/agents/reviewer.py
+```
+
+Analyzes the generated script and calculates:
+
+* Total word count
+* Estimated spoken duration
+
+---
+
+### 4. Narrator Agent
+
+**File:**
+
+```text
+backend/agents/narrator.py
+```
+
+The Narrator Agent converts generated script segments into spoken audio.
+
+The agent:
+
+```text
+Script Segments
+      ↓
+Extract Voiceover
+      ↓
+Remove Markdown Formatting
+      ↓
+Combine Narration
+      ↓
+Edge TTS
+      ↓
+Audio Buffer
+      ↓
+Return MP3 Data
+```
+
+The core narration function uses asynchronous streaming to collect generated audio data into an in-memory `BytesIO` buffer.
+
+---
+
+### 5. FastAPI API Layer
+
+**File:**
+
+```text
+backend/api.py
+```
+
+Connects the frontend with the AI pipeline.
+
+Current endpoints:
+
+```text
+GET  /generate
+POST /narrate
+```
+
+The `/generate` endpoint handles:
+
+```text
+Research → Writing → Review
+```
+
+The `/narrate` endpoint handles:
+
+```text
+Script → Voice Selection → TTS → Audio
+```
+
+---
+
+### 6. ScriptFactory Component
+
+**File:**
+
+```text
+frontend/landing-page/src/components/ScriptFactory.jsx
+```
+
+Responsible for:
+
+* Topic input
+* Script generation
+* Loading states
+* Scene rendering
+* Word count display
+* Runtime display
+* Script downloads
+* Access to production tools
+
+---
+
+### 7. CaptionGenerator Component
+
+**File:**
+
+```text
+frontend/landing-page/src/components/CaptionGenerator.jsx
+```
+
+Responsible for:
+
+* Extracting narration
+* Generating caption timings
+* Highlighting important terms
+* Exporting SRT
+* Exporting ASS
+
+---
+
+### 8. Narrator Component
+
+**File:**
+
+```text
+frontend/landing-page/src/components/Narrator.jsx
+```
+
+Responsible for the complete voiceover experience.
+
+It provides:
+
+* Voice selection
+* Script preview
+* Voiceover generation
+* Loading and error states
+* Audio playback
+* Play / pause controls
+* Audio seeking
+* Playback timer
+* MP3 download
+
+The component communicates with:
+
+```text
+POST http://127.0.0.1:8000/narrate
+```
+
+The returned Base64 audio is converted into a browser Blob and played using an HTML5 Audio element.
+
+---
+
+## 🎙️ Voiceover System
+
+The current voiceover system supports four Edge TTS voices:
+
+```javascript
+const VOICES = [
+  {
+    id: "en-US-GuyNeural",
+    label: "Guy",
+    desc: "Deep, documentary"
+  },
+  {
+    id: "en-US-AriaNeural",
+    label: "Aria",
+    desc: "Clear, neutral"
+  },
+  {
+    id: "en-GB-RyanNeural",
+    label: "Ryan",
+    desc: "British"
+  },
+  {
+    id: "en-US-JennyNeural",
+    label: "Jenny",
+    desc: "Warm, conversational"
+  }
+];
+```
+
+The narration is generated from the **voiceover field only**.
+
+Visual cues and SFX triggers are intentionally excluded from the spoken narration.
+
+Markdown emphasis is also removed before the text is sent to the TTS engine:
+
+```python
+full_text = " ".join(
+    seg["voiceover"].replace("**", "")
+    for seg in script_segments
+)
+```
+
+This ensures the AI-generated narration is clean and natural.
+
+---
+
+## 📈 Progress
+
+### ✅ Phase 1 — Foundation
+
+* [x] Project structure established
+* [x] Tavily API integration
+* [x] Gemini API integration
+* [x] Asynchronous pipeline architecture
+
+### ✅ Phase 2 — Core AI Pipeline
+
+* [x] Researcher Agent
+* [x] ScriptWriter Agent
+* [x] Pydantic validation
+* [x] End-to-end CLI pipeline
+* [x] Structured JSON script output
+
+### ✅ Phase 3 — Storytelling Optimization
+
+* [x] Temperature control
+* [x] 90/10 narrative rule
+* [x] Paradox Hook
+* [x] Delayed Gratification
+* [x] Vocal Emboldening
+* [x] Invisible Loop design
+
+### ✅ Phase 4 — Script Review
+
+* [x] Reviewer Agent
+* [x] Word count calculation
+* [x] Runtime estimation
+* [x] Reviewer integrated with API
+
+### ✅ Phase 5 — Web Application
+
+* [x] FastAPI backend
+* [x] React frontend
+* [x] Vite integration
+* [x] Tailwind CSS
+* [x] GSAP animations
+* [x] Scene rendering
+* [x] Live word/runtime counters
+* [x] Script downloads
+
+### ✅ Phase 6 — Caption Generation
+
+* [x] Client-side caption generation
+* [x] Automatic narration extraction
+* [x] Caption timing
+* [x] Keyword highlighting
+* [x] SRT export
+* [x] ASS export
+
+### ✅ Phase 7 — AI Voiceover
+
+* [x] Narrator Agent
+* [x] Edge TTS integration
+* [x] Multiple voice options
+* [x] Voice selection UI
+* [x] Script preview
+* [x] Audio generation endpoint
+* [x] Base64 audio transfer
+* [x] Browser audio playback
+* [x] Custom progress bar
+* [x] Play/pause controls
+* [x] Audio seeking
+* [x] Playback duration display
+* [x] MP3 download
 
 ---
 
 ## 🔑 API Requirements
 
 ### Tavily API
-- **Purpose**: Real-time web search and data gathering
-- **Endpoint**: Tavily Search API
-- **Authentication**: API Key via environment variable
-- **Rate Limits**: Depends on subscription tier
+
+**Purpose:** Real-time web research and information gathering.
+
+Used by:
+
+```text
+Researcher Agent
+```
+
+Authentication:
+
+```env
+TAVILY_API_KEY=your_key
+```
+
+---
 
 ### Google Gemini API
-- **Model**: Gemini 2.5 Flash
-- **Purpose**: Advanced script generation with JSON schema validation
-- **Authentication**: API Key via environment variable
-- **Features Used**:
-  - `response_mime_type`: `'application/json'`
-  - `response_schema`: Pydantic model validation
-  - Temperature: 0.3 (for consistency)
 
-### Internal Script Factory API
-- **Endpoint**: `GET /generate?topic=<topic>`
-- **Server**: FastAPI, served locally via `uvicorn`
-- **CORS**: Configured for `http://localhost:5173`
-- **Returns**: `{ review, response }` — review metrics plus the full script segment array
+**Model:** Gemini 2.5 Flash
+
+**Purpose:** AI-powered script generation.
+
+Used by:
+
+```text
+ScriptWriter Agent
+```
+
+Authentication:
+
+```env
+GEMINI_API_KEY=your_key
+```
+
+---
+
+### Edge TTS
+
+**Purpose:** AI-powered text-to-speech narration.
+
+Used by:
+
+```text
+Narrator Agent
+```
+
+The current implementation uses the `edge-tts` Python package and supports multiple neural voices.
+
+Unlike the research and script-generation stages, the current voiceover implementation does not require an additional API key.
 
 ---
 
 ## 🚧 Future Enhancements
 
-### Short-term (Next Iterations)
-- [ ] Support for multiple topics in batch mode
-- [ ] Script variation generation (A/B testing)
-- [ ] Caching system for research results
-- [ ] Performance metrics and logging
-- [ ] Error handling and retry logic (including on the frontend fetch)
-- [ ] Configurable backend URL for the frontend (currently hardcoded to `127.0.0.1:8000`)
+### Short-Term
 
-### Medium-term
-- [ ] Database integration for script storage
-- [ ] Deployed hosting for both frontend and backend (currently local-only)
-- [ ] Analytics tracking for script performance
-- [ ] Multi-language support
+* [ ] Add better backend error handling
+* [ ] Add retry logic for failed AI requests
+* [ ] Add configurable backend URL
+* [ ] Add loading progress for voice generation
+* [ ] Add voice preview before narration generation
+* [ ] Add more voice options
+* [ ] Improve audio player UI
+* [ ] Add audio regeneration without regenerating the script
 
-### Long-term
-- [ ] Voice synthesis integration
-- [ ] Automated video generation
-- [ ] Machine learning model for topic trending
-- [ ] Microservices architecture
+### Medium-Term
 
----
+* [ ] Store generated scripts and audio
+* [ ] Database integration
+* [ ] User accounts and project history
+* [ ] Cloud deployment
+* [ ] Batch topic generation
+* [ ] Script A/B testing
+* [ ] Multi-language voiceover
+* [ ] Voiceover speed and pitch controls
+* [ ] Analytics dashboard
 
-## 📝 Development Notes
+### Long-Term
 
-- **Day 7**: Full CLI pipeline (`main.py`) worked end-to-end
-- Added a **Reviewer Agent** to calculate word count and estimated spoken duration
-- Wrapped the pipeline in a **FastAPI** server (`api.py`) for frontend consumption
-- Built a full **React + Vite + Tailwind + GSAP** landing page (`frontend/landing-page`) to replace the CLI-only workflow
-- Added a standalone **Caption Generator** for SRT/ASS subtitle export directly from generated scripts
-- **Narrative Strategy**: Technical thriller approach for maximum engagement
-- **Script Length**: Optimized for 50-60 second YouTube Shorts
-- **AI Model**: Using Gemini 2.5 Flash for speed and quality balance
+* [ ] Automated visual asset collection
+* [ ] AI-generated video assembly
+* [ ] Automatic B-roll selection
+* [ ] SFX and background music generation
+* [ ] Voiceover + captions synchronization
+* [ ] Complete YouTube Shorts production pipeline
+* [ ] Automated video rendering
+* [ ] Direct publishing workflow
+* [ ] Trend detection and topic discovery
 
 ---
 
 ## 🤝 Contributing
 
 To extend Script Factory:
-1. Add new agents in `backend/agents/`
-2. Expand `backend/main.py` or `backend/api.py` with additional pipelines/endpoints
-3. Create new Pydantic models in the respective agent files
-4. Add or update frontend components in `frontend/landing-page/src/components/`
-5. Test backend logic with `backend/practice.py` before integration
+
+1. Add new AI agents in:
+
+```text
+backend/agents/
+```
+
+2. Add new API endpoints in:
+
+```text
+backend/api.py
+```
+
+3. Add new Pydantic models where required.
+
+4. Create frontend components in:
+
+```text
+frontend/landing-page/src/components/
+```
+
+5. Test backend logic before integrating it into the full pipeline.
+
+The modular architecture makes it possible to continue adding production stages without rebuilding the entire application.
 
 ---
 
@@ -440,14 +1042,38 @@ This project is developed for educational and commercial purposes.
 
 ---
 
-## 📞 Support
+## 🎬 The Vision
 
-For issues or questions about the pipeline, refer to:
-- `backend/notes.md` — development notes and progress log
-- `backend/practice.py` — testing and mock script data
-- Individual agent files (`backend/agents/`) for specific component details
-- `frontend/landing-page/src/components/` for frontend behavior
+Script Factory is evolving from a simple AI script generator into a complete **AI-powered short-form content production pipeline**.
+
+The long-term goal is to automate the journey from:
+
+```text
+IDEA
+  ↓
+RESEARCH
+  ↓
+SCRIPT
+  ↓
+REVIEW
+  ↓
+VOICEOVER
+  ↓
+CAPTIONS
+  ↓
+VISUALS
+  ↓
+SOUND EFFECTS
+  ↓
+VIDEO
+  ↓
+PUBLISH
+```
+
+The ultimate goal:
+
+> **Give Script Factory a topic. Get a finished short-form documentary.**
 
 ---
 
-**Built with ❤️ for AI-powered storytelling**
+**Built with ❤️ for AI-powered storytelling.**
