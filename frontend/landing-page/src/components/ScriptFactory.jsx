@@ -2,6 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import CaptionGenerator from "./CaptionGenerator";
 import Narrator from "./Narrator";
+import { useHistory } from "../context/HistoryContext";
+import { useLocation } from "react-router-dom";
+
 
 const HEADLINE = "SCRIPT FACTORY";
 
@@ -51,6 +54,8 @@ export default function ScriptFactory() {
   const wordDisplayRef = useRef(null);
   const timeDisplayRef = useRef(null);
   const tweenTargets = useRef({ words: 0, seconds: 0 });
+  const location = useLocation();
+  const { refreshHistory } = useHistory();
 
   // Entrance animations
   useEffect(() => {
@@ -122,6 +127,19 @@ export default function ScriptFactory() {
     });
   }, [status, scenes, wordCount, estimatedSeconds]);
 
+      useEffect(() => {
+  const loaded = location.state?.loadedScript;
+  if (!loaded) return;
+  setScenes(loaded.scenes);
+  setWordCount(loaded.word_count);
+  setEstimatedSeconds(loaded.estimated_duration);
+  setActiveTopic(loaded.topic);
+  setActivePanel("none");
+  setDownloadScript(false);
+  setStatus("done");
+}, [location.state]);
+
+
   async function runSearch(e) {
     e?.preventDefault();
     const trimmed = topic.trim();
@@ -146,6 +164,7 @@ export default function ScriptFactory() {
       // Save the topic successfully generated to lock duplicate requests
       setActiveTopic(trimmed);
       setStatus("done");
+      refreshHistory(); 
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong.");
       setStatus("error");
