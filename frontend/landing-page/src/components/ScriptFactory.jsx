@@ -46,6 +46,9 @@ export default function ScriptFactory() {
   const [activePanel, setActivePanel] = useState("none");
   const [downloadScript, setDownloadScript] = useState(false);
 
+  const [scriptId, setScriptId] = useState(null);
+  const [audioBase64, setAudioBase64] = useState(null);
+
   const headlineRef = useRef(null);
   const subRef = useRef(null);
   const searchRef = useRef(null);
@@ -127,18 +130,34 @@ export default function ScriptFactory() {
     });
   }, [status, scenes, wordCount, estimatedSeconds]);
 
-      useEffect(() => {
+    useEffect(() => {
   const loaded = location.state?.loadedScript;
-  if (!loaded) return;
-  setScenes(loaded.scenes);
-  setWordCount(loaded.word_count);
-  setEstimatedSeconds(loaded.estimated_duration);
-  setActiveTopic(loaded.topic);
-  setActivePanel("none");
-  setDownloadScript(false);
-  setStatus("done");
+  if (loaded) {
+    setScenes(loaded.scenes);
+    setWordCount(loaded.word_count);
+    setEstimatedSeconds(loaded.estimated_duration);
+    setActiveTopic(loaded.topic);
+    setScriptId(loaded.id);
+    setAudioBase64(loaded.audio_base64 ?? null);   // see Bug 3
+    setActivePanel("none");
+    setDownloadScript(false);
+    setStatus("done");
+    return;
+  }
+  if (location.state?.reset) {
+    setScenes([]);
+    setTopic("");
+    setActiveTopic("");
+    setWordCount(0);
+    setEstimatedSeconds(0);
+    setScriptId(null);
+    setAudioBase64(null);
+    setActivePanel("none");
+    setDownloadScript(false);
+    setStatus("idle");
+    setErrorMsg("");
+  }
 }, [location.state]);
-
 
   async function runSearch(e) {
     e?.preventDefault();
@@ -163,6 +182,8 @@ export default function ScriptFactory() {
 
       // Save the topic successfully generated to lock duplicate requests
       setActiveTopic(trimmed);
+      setScriptId(data.id ?? null);
+      setAudioBase64(null); 
       setStatus("done");
       refreshHistory(); 
     } catch (err) {
@@ -370,7 +391,13 @@ export default function ScriptFactory() {
                     {activePanel === "captions" ? (
                       <CaptionGenerator initialScript={captionScript} />
                     ) : (
-                      <Narrator scenes={scenes} topic={activeTopic} />
+                      <Narrator
+                              scenes={scenes}
+                              topic={activeTopic}
+                              scriptId={scriptId}
+                              audioBase64={audioBase64}
+                              onAudioReady={setAudioBase64}
+                       />
                     )}
                   </div>
                 </div>
