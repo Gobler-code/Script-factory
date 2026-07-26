@@ -24,11 +24,10 @@ function base64ToBlob(base64, mime = "audio/mpeg") {
   return new Blob([buffer], { type: mime });
 }
 
-export default function Narrator({ scenes = [], topic = "narration" }) {
+export default function Narrator({ scenes = [], topic = "narration", scriptId = null, audioBase64, onAudioReady }) {
   const [voice, setVoice] = useState(VOICES[0].id);
-  const [status, setStatus] = useState("idle"); // idle | loading | error | done
+  const [status, setStatus] = useState(audioBase64 ? "done" : "idle");
   const [errorMsg, setErrorMsg] = useState("");
-  const [audioBase64, setAudioBase64] = useState(null);
   const [src, setSrc] = useState(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
@@ -46,17 +45,22 @@ export default function Narrator({ scenes = [], topic = "narration" }) {
       const result = await fetch("http://127.0.0.1:8000/narrate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scenes, voice }),
+        body: JSON.stringify({ scenes, voice, script_id: scriptId  }),
       });
       if (!result.ok) throw new Error("Voiceover generation failed.");
       const data = await result.json();
-      setAudioBase64(data.audio_base64);
+      onAudioReady(data.audio_base64);
       setStatus("done");
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong.");
       setStatus("error");
     }
   }
+
+  useEffect(() => {
+  setStatus(audioBase64 ? "done" : "idle");
+}, [audioBase64]);
+
 
   useEffect(() => {
     if (!audioBase64) {
