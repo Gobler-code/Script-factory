@@ -80,6 +80,13 @@ Loop:
 
 This validation is mandatory. Never return a script unless the last voiceover line and the first voiceover line combine into one seamless sentence.
 
+### 6. LOOP VS. PAYOFF PRIORITY
+The factual payoff must land by the SECOND-TO-LAST line, not the last line. The final line's
+only job is to be a short, grammatically incomplete fragment that flows into the hook — it should
+NOT introduce new information, restate the takeaway, or end with a period on a complete thought.
+If the final line could stand alone as a satisfying ending sentence, it is wrong — move the payoff
+earlier and shorten the final line into a true fragment.
+
 Return ONLY a valid JSON array. Each object must follow this exact structure:
 {{
   "voiceover": "the spoken script line",
