@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
-import { useHistory } from "../context/HistoryContext";
+import { useHistory} from "../context/HistoryContext";
 
 const linkBase =
   "font-mono text-xs tracking-[0.14em] uppercase px-3 py-2 rounded transition-colors block";
@@ -59,7 +59,7 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
 
   // Get history from HistoryContext
-  const { history } = useHistory();
+  const { history , refreshHistory } = useHistory();
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,7 +79,13 @@ export default function Sidebar() {
       },
     });
   }
-
+   
+  async function handleDelete(e, id) {
+  e.stopPropagation();
+  if (!window.confirm("Delete this script? This can't be undone.")) return;
+  await fetch(`http://127.0.0.1:8000/scripts/${id}`, { method: "DELETE" });
+  refreshHistory();
+  }
   const grouped = groupHistory(history);
 
   return (
@@ -106,13 +112,13 @@ export default function Sidebar() {
         </button>
       </div>
 
-      <NavLink
-        to="/"
-        end
-        className="font-mono text-xs tracking-[0.14em] uppercase text-[#f3f1ea] border border-[#f3f1ea]/20 rounded px-3 py-2 text-center hover:bg-[#f3f1ea]/5 transition-colors whitespace-nowrap overflow-hidden"
-      >
-        {collapsed ? "+" : "+ New Script"}
-      </NavLink>
+      
+<button
+  onClick={() => navigate("/", { state: { reset: true } })}
+  className="font-mono text-xs tracking-[0.14em] uppercase text-[#f3f1ea] border border-[#f3f1ea]/20 rounded px-3 py-2 text-center hover:bg-[#f3f1ea]/5 transition-colors whitespace-nowrap overflow-hidden"
+>
+  {collapsed ? "+" : "+ New Script"}
+</button>
 
       <nav className="flex flex-col gap-1">
         {!collapsed && (
@@ -160,20 +166,26 @@ export default function Sidebar() {
                 {label}
               </span>
 
-              {items.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => openScript(s.id)}
-                  title={s.topic}
-                  className={`text-left text-[13px] px-3 py-1.5 rounded truncate transition-colors ${
-                    s.id === activeId
-                      ? "bg-[#f3f1ea]/10 text-[#f3f1ea]"
-                      : "text-[#8f8c82] hover:text-[#f3f1ea] hover:bg-[#f3f1ea]/5"
-                  }`}
-                >
-                  {s.topic}
-                </button>
-              ))}
+             {items.map((s) => (
+  <div key={s.id} className="group flex items-center gap-1">
+    <button
+      onClick={() => openScript(s.id)}
+      title={s.topic}
+      className={`flex-1 text-left text-[13px] px-3 py-1.5 rounded truncate transition-colors ${
+        s.id === activeId ? "bg-[#f3f1ea]/10 text-[#f3f1ea]" : "text-[#8f8c82] hover:text-[#f3f1ea] hover:bg-[#f3f1ea]/5"
+      }`}
+    >
+      {s.topic}
+    </button>
+    <button
+      onClick={(e) => handleDelete(e, s.id)}
+      aria-label="Delete script"
+      className="opacity-0 group-hover:opacity-100 text-[#55534c] hover:text-[#d6a89a] text-xs px-1.5 transition-opacity"
+    >
+      ✕
+    </button>
+  </div>
+))}
             </div>
           ))}
         </nav>
