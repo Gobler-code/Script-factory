@@ -19,20 +19,36 @@ client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 def write_script(research_data):
   prompt = f""" 
-    
-      You are an elite short-form narrative writer specializing in technical thriller documentaries for YouTube Shorts. 
+You are an elite short-form narrative writer specializing in technical thriller documentaries for YouTube Shorts. 
 
-Your core task is to turn raw web research data into a precise, high-suspense 50-to-60 second vocal script. 
+Your core task is to turn raw web research data into a precise, high-suspense 50-to-60 second vocal script that tells a COMPLETE story with a real payoff — not a trailer that only builds tension.
 
 ### THE 90/10 RULE DECREE:
-- 90% of your cognitive processing and word choice MUST be spent engineering the `voiceover` text. Focus deeply on pacing, vocabulary, and high-retention storytelling flow.
+- 90% of your cognitive effort goes into the `voiceover` text — but "effort" means marrying high-retention pacing and vocabulary TO the real facts in the research data, not writing dramatic prose that could apply to any story. A gripping sentence with no real information in it is a wasted line.
 - The `rough_visual_cue` and `rough_sfx_trigger` fields are strictly secondary metadata tags for a veteran video editor. Do NOT write long paragraphs for them. Keep them under 5 words max per frame to save execution energy for the written spoken word.
 
 ### CRITICAL ALGORITHMIC RETENTION DIRECTIVES:
-1. THE PARADOX HOOK (0-3s): Open directly with a massive, logic-defying contradiction about the tech event to stop the scroll instantly. No filler greetings.
-2. DELAYED GRATIFICATION (3-25s): Build intense curiosity like a true-crime story. Completely hide the name of the company, the developer, or the specific bug for the first 15 to 20 seconds.
-3. VOCAL EMBOLDENING: You must aggressively enclose key punch words in **bold markdown** so the voiceover delivery hits with maximum dramatic emphasis.
-### 4. THE INVISIBLE LOOP (MANDATORY)
+
+### 1. THE THREE-ACT STRUCTURE (MANDATORY — a script that skips Act 3 is a failed script)
+
+ACT 1 — THE PARADOX HOOK (0–3s): Open directly with a massive, logic-defying contradiction about the tech event to stop the scroll instantly. No filler greetings.
+
+ACT 2 — THE CONCEALED BUILD (3–25s): Build intense curiosity like a true-crime story. Completely hide the name of the company, the developer, or the specific bug/event for this window ONLY.
+
+ACT 3 — THE REVEAL & PAYOFF (25s–end) — MANDATORY, NON-NEGOTIABLE:
+- By the start of this act, you MUST name the real people, companies, and specific event from the research data. No more vague pronouns or generic nouns ("a company," "one side," "a rival").
+- Every remaining line must add ONE concrete, verifiable fact pulled directly from the research data: a date, a dollar figure, a direct quote, a named decision, a specific consequence.
+- The script must end on a genuine resolution or revelation — the actual answer to the question the hook raised — not another escalating, vague tension beat. If the final 2-3 lines could be reordered anywhere earlier in the script without losing meaning, they are too vague — rewrite them.
+
+### 2. BANNED PHRASES
+Do not use vague dramatic filler as a substitute for real information. Never use phrases like "silent war," "clash of titans," "deeply personal feud," "moral compass," "AI mutiny," "battle for control," or similar generic conflict language — UNLESS immediately followed in the same or next line by the specific named fact that justifies it. Mood without a fact attached is not allowed past Act 2.
+
+### 3. FACT DENSITY REQUIREMENT
+At least half of all lines in Acts 2 and 3 combined must contain a specific, named detail drawn directly from the provided research data (a real name, company, number, date, or quote). If the research data is thin on a given point, pull from what IS available rather than inventing dramatic abstraction to fill the gap.
+
+### 4. VOCAL EMBOLDENING: You must aggressively enclose key punch words in **bold markdown** so the voiceover delivery hits with maximum dramatic emphasis.
+
+### 5. THE INVISIBLE LOOP (MANDATORY)
 
 The script must create a seamless infinite loop that is impossible for the viewer to notice.
 
@@ -42,6 +58,7 @@ The script must create a seamless infinite loop that is impossible for the viewe
 - When the YouTube Short automatically repeats, the **last voiceover line immediately followed by the first voiceover line must form ONE complete, grammatically correct, natural-sounding sentence.**
 - The transition must feel completely invisible and conversational. The viewer should feel as though the narrator never stopped speaking.
 - Do **not** simply repeat words, restate the hook, or end with an unfinished cliffhanger. The connection must be meaningful, fluent, and directly related to the video's story.
+- The final line must ALSO satisfy Act 3's payoff requirement — it cannot sacrifice the story's resolution just to make the loop grammatically clean. If a loop-friendly final line has no factual payoff, rewrite it until it has both.
 
 **Mandatory Self-Validation:**
 Before returning the final script, mentally concatenate:
