@@ -28,8 +28,9 @@ def get_script(script_id):
     result = supabase.table("scripts").select("*").eq("id", script_id).single().execute()
     return result.data
 
-def delete_script(script_id):
-    supabase.table("scripts").delete().eq("id",script_id).execute()
+def get_script(script_id):
+    result = supabase.table("scripts").select("*").eq("id", script_id).execute()
+    return result.data[0] if result.data else None
 
 
 def save_audio(script_id, audio_base64, voice):
