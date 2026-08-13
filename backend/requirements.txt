@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+requests
+tavily-python
+google-genai
+pydantic
+python-dotenv
+edge-tts
+supabase
+slowapi
