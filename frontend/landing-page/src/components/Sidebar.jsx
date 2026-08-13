@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { useHistory} from "../context/HistoryContext";
+import { API_BASE_URL } from "../config";
 
 const linkBase =
   "font-mono text-xs tracking-[0.14em] uppercase px-3 py-2 rounded transition-colors block";
@@ -67,7 +68,7 @@ export default function Sidebar() {
   const activeId = location.state?.loadedScript?.id;
 
   async function openScript(id) {
-    const res = await fetch(`http://127.0.0.1:8000/scripts/${id}`);
+    const res = await fetch(`${API_BASE_URL}/scripts/${id}`);
 
     if (!res.ok) return;
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { API_BASE_URL } from "../config";
 
 const AMBER = "#FAC775";
 const AMBER_INK = "#412402";
@@ -42,7 +43,7 @@ export default function Narrator({ scenes = [], topic = "narration", scriptId = 
     setStatus("loading");
     setErrorMsg("");
     try {
-      const result = await fetch("http://127.0.0.1:8000/narrate", {
+      const result = await fetch(`${API_BASE_URL}/narrate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scenes, voice, script_id: scriptId  }),

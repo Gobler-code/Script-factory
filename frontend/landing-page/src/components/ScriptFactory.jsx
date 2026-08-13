@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import CaptionGenerator from "./CaptionGenerator";
 import Narrator from "./Narrator";
+import { API_BASE_URL } from "./config";
 import { useHistory } from "../context/HistoryContext";
 import { useLocation } from "react-router-dom";
 
@@ -172,7 +173,7 @@ export default function ScriptFactory() {
     setDownloadScript(false);
 
     try {
-      const URL = `http://127.0.0.1:8000/generate?topic=${encodeURIComponent(trimmed)}`;
+      const URL = `${API_BASE_URL}/generate?topic=${encodeURIComponent(trimmed)}`;
       const result = await fetch(URL);
       const data = await result.json();
 
