@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { API_BASE_URL } from "../components/config";
 
 const HistoryContext = createContext(null);
 
@@ -6,7 +7,7 @@ export function HistoryProvider({ children }) {
   const [history, setHistory] = useState([]);
 
   const refreshHistory = useCallback(() => {
-    fetch("http://127.0.0.1:8000/scripts")
+    fetch(`${API_BASE_URL}/scripts`)
       .then((res) => (res.ok ? res.json() : []))
       .then(setHistory)
       .catch(() => setHistory([]));
