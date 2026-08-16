@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL } from "./config";
 
 const AMBER = "#FAC775";
 const AMBER_INK = "#412402";

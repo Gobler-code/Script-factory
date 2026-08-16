@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, useLocation, NavLink } from "react-router-dom";
 import { useHistory} from "../context/HistoryContext";
-import { API_BASE_URL } from "../config";
+import { API_BASE_URL } from "./config";
 
 const linkBase =
   "font-mono text-xs tracking-[0.14em] uppercase px-3 py-2 rounded transition-colors block";
@@ -84,7 +84,7 @@ export default function Sidebar() {
   async function handleDelete(e, id) {
   e.stopPropagation();
   if (!window.confirm("Delete this script? This can't be undone.")) return;
-  await fetch(`http://127.0.0.1:8000/scripts/${id}`, { method: "DELETE" });
+  await fetch(`${API_BASE_URL}/scripts/${id}`, { method: "DELETE" });
   refreshHistory();
   }
   const grouped = groupHistory(history);
