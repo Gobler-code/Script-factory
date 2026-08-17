@@ -9,9 +9,11 @@ function App() {
   return (
     <BrowserRouter>
       <HistoryProvider>
-        <div className="flex min-h-screen bg-[#0a0a09]">
+        {/* flex-col stacks header on mobile; lg:flex-row puts sidebar on left for desktop */}
+        <div className="flex flex-col lg:flex-row min-h-screen bg-[#0a0a09] w-full overflow-x-hidden">
           <Sidebar />
-          <div className="flex-1">
+          {/* min-w-0 prevents child flex items from overflowing horizontally */}
+          <div className="flex-1 w-full min-w-0">
             <Routes>
               <Route path="/" element={<ScriptFactory />} />
               <Route path="/captions" element={<CaptionsPage />} />

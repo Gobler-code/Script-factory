@@ -6,7 +6,6 @@ import { API_BASE_URL } from "./config";
 import { useHistory } from "../context/HistoryContext";
 import { useLocation } from "react-router-dom";
 
-
 const HEADLINE = "SCRIPT FACTORY";
 
 function renderVoiceover(text) {
@@ -24,6 +23,7 @@ function formatClock(totalSeconds) {
   const ss = s % 60;
   return `${String(mm).padStart(2, "0")}:${String(ss).padStart(2, "0")}`;
 }
+
 function downloadText(filename, text) {
   const blob = new Blob([text], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
@@ -36,14 +36,12 @@ function downloadText(filename, text) {
 
 export default function ScriptFactory() {
   const [topic, setTopic] = useState("");
-  // Track the exact topic string that is currently rendered on screen
   const [activeTopic, setActiveTopic] = useState("");
-  const [status, setStatus] = useState("idle"); // idle | loading | error | done
+  const [status, setStatus] = useState("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [scenes, setScenes] = useState([]);
   const [wordCount, setWordCount] = useState(0);
   const [estimatedSeconds, setEstimatedSeconds] = useState(0);
-  // Single slot for whichever side-panel tool is open: "none" | "captions" | "narrator"
   const [activePanel, setActivePanel] = useState("none");
   const [downloadScript, setDownloadScript] = useState(false);
 
@@ -61,7 +59,6 @@ export default function ScriptFactory() {
   const location = useLocation();
   const { refreshHistory } = useHistory();
 
-  // Entrance animations
   useEffect(() => {
     const ctx = gsap.context(() => {
       const letters = headlineRef.current?.querySelectorAll(".sf-letter");
@@ -87,7 +84,6 @@ export default function ScriptFactory() {
     return () => ctx.revert();
   }, []);
 
-  // Loading loop
   useEffect(() => {
     if (status !== "loading" || !processingBarRef.current) return;
     const tween = gsap.fromTo(
@@ -98,7 +94,6 @@ export default function ScriptFactory() {
     return () => tween.kill();
   }, [status]);
 
-  // Results entrance count-ups
   useEffect(() => {
     if (status !== "done" || !resultsRef.current) return;
 
@@ -131,40 +126,39 @@ export default function ScriptFactory() {
     });
   }, [status, scenes, wordCount, estimatedSeconds]);
 
-    useEffect(() => {
-  const loaded = location.state?.loadedScript;
-  if (loaded) {
-    setScenes(loaded.scenes);
-    setWordCount(loaded.word_count);
-    setEstimatedSeconds(loaded.estimated_duration);
-    setActiveTopic(loaded.topic);
-    setScriptId(loaded.id);
-    setAudioBase64(loaded.audio_base64 ?? null);   // see Bug 3
-    setActivePanel("none");
-    setDownloadScript(false);
-    setStatus("done");
-    return;
-  }
-  if (location.state?.reset) {
-    setScenes([]);
-    setTopic("");
-    setActiveTopic("");
-    setWordCount(0);
-    setEstimatedSeconds(0);
-    setScriptId(null);
-    setAudioBase64(null);
-    setActivePanel("none");
-    setDownloadScript(false);
-    setStatus("idle");
-    setErrorMsg("");
-  }
-}, [location.state]);
+  useEffect(() => {
+    const loaded = location.state?.loadedScript;
+    if (loaded) {
+      setScenes(loaded.scenes);
+      setWordCount(loaded.word_count);
+      setEstimatedSeconds(loaded.estimated_duration);
+      setActiveTopic(loaded.topic);
+      setScriptId(loaded.id);
+      setAudioBase64(loaded.audio_base64 ?? null);
+      setActivePanel("none");
+      setDownloadScript(false);
+      setStatus("done");
+      return;
+    }
+    if (location.state?.reset) {
+      setScenes([]);
+      setTopic("");
+      setActiveTopic("");
+      setWordCount(0);
+      setEstimatedSeconds(0);
+      setScriptId(null);
+      setAudioBase64(null);
+      setActivePanel("none");
+      setDownloadScript(false);
+      setStatus("idle");
+      setErrorMsg("");
+    }
+  }, [location.state]);
 
   async function runSearch(e) {
     e?.preventDefault();
     const trimmed = topic.trim();
 
-    // Guard Clause: Block request if empty, loading, OR matches the active visible topic
     if (!trimmed || status === "loading" || trimmed.toLowerCase() === activeTopic.toLowerCase()) return;
 
     setStatus("loading");
@@ -181,12 +175,11 @@ export default function ScriptFactory() {
       setWordCount(data.review["total words"]);
       setEstimatedSeconds(data.review["Estimated Duration"]);
 
-      // Save the topic successfully generated to lock duplicate requests
       setActiveTopic(trimmed);
       setScriptId(data.id ?? null);
-      setAudioBase64(null); 
+      setAudioBase64(null);
       setStatus("done");
-      refreshHistory(); 
+      refreshHistory();
     } catch (err) {
       setErrorMsg(err.message || "Something went wrong.");
       setStatus("error");
@@ -196,22 +189,22 @@ export default function ScriptFactory() {
   const captionScript = scenes.map((scene) => scene.voiceover).join(" ");
   const isPanelOpen = activePanel !== "none";
 
-  // Dynamic button parameters
   const isDuplicate = topic.trim().toLowerCase() === activeTopic.toLowerCase() && status === "done";
   const isSubmitDisabled = status === "loading" || !topic.trim() || isDuplicate;
 
   return (
-    <div className="min-h-screen bg-[#0a0a09] text-[#f3f1ea] font-sans relative overflow-x-hidden">
+    <div className="flex-1 w-full min-w-0 bg-[#0a0a09] text-[#f3f1ea] font-sans relative overflow-x-hidden min-h-screen">
       {/* Hero Header Area */}
-      <section className={`transition-opacity duration-300 ${isPanelOpen ? "opacity-40" : "opacity-100"} flex flex-col items-center justify-center px-6 pt-[8vh] pb-6 text-center relative z-10`}>
-        <div className="font-mono text-[11px] tracking-[0.32em] uppercase text-[#8f8c82] mb-7">
+      <section className={`transition-opacity duration-300 ${isPanelOpen ? "opacity-40" : "opacity-100"} flex flex-col items-center justify-center px-4 sm:px-6 pt-[6vh] sm:pt-[8vh] pb-6 text-center relative z-10 w-full max-w-5xl mx-auto`}>
+        <div className="font-mono text-[10px] sm:text-[11px] tracking-[0.28em] sm:tracking-[0.32em] uppercase text-[#8f8c82] mb-5 sm:mb-7">
           <span className="text-[#f3f1ea]">●</span> script generation
         </div>
 
+        {/* Responsive Headline Alignment Fix */}
         <h1
           ref={headlineRef}
           aria-label={HEADLINE}
-          className="font-serif font-light leading-[0.96] tracking-tight text-[clamp(48px,11vw,128px)]"
+          className="font-serif font-light leading-[1.05] sm:leading-[0.96] tracking-tight text-[clamp(28px,7vw,96px)] max-w-full break-words text-center w-full"
         >
           {HEADLINE.split("").map((char, i) => (
             <span className="sf-letter inline-block will-change-transform" key={i}>
@@ -220,14 +213,15 @@ export default function ScriptFactory() {
           ))}
         </h1>
 
-        <p ref={subRef} className="mt-6 max-w-[480px] text-base leading-relaxed text-[#8f8c82]">
+        <p ref={subRef} className="mt-4 sm:mt-6 max-w-[480px] text-sm sm:text-base leading-relaxed text-[#8f8c82] px-2 text-center">
           Give it a topic. Get back a{" "}
           <em className="not-italic font-serif italic text-[#f3f1ea]">shot-ready</em> script.
         </p>
 
-        <form ref={searchRef} onSubmit={runSearch} className="mt-14 w-[min(560px,88vw)]">
-          <div className="flex items-end gap-5 border-b border-[#f3f1ea]/30 pb-3.5 transition-colors focus-within:border-[#f3f1ea]">
-            <span className="font-mono text-[11px] tracking-[0.18em] text-[#55534c] pb-[3px] whitespace-nowrap">
+        {/* Form Container */}
+        <form ref={searchRef} onSubmit={runSearch} className="mt-8 sm:mt-14 w-full max-w-[560px] mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-end gap-3 sm:gap-5 border-b border-[#f3f1ea]/30 pb-3.5 transition-colors focus-within:border-[#f3f1ea]">
+            <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.18em] text-[#55534c] pb-[3px] whitespace-nowrap text-left">
               TOPIC /
             </span>
             <input
@@ -236,18 +230,18 @@ export default function ScriptFactory() {
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g. the CrowdStrike outage"
               aria-label="Script topic"
-              className="flex-1 bg-transparent outline-none font-serif italic text-xl text-[#f3f1ea] placeholder:text-[#55534c] placeholder:italic"
+              className="w-full bg-transparent outline-none font-serif italic text-lg sm:text-xl text-[#f3f1ea] placeholder:text-[#55534c] placeholder:italic min-h-[44px] sm:min-h-0"
             />
             <button
               type="submit"
               disabled={isSubmitDisabled}
-              className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 disabled:opacity-35 disabled:hover:translate-x-0 transition-all py-1.5 whitespace-nowrap uppercase"
+              className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] disabled:opacity-35 transition-all py-2 sm:py-1.5 whitespace-nowrap uppercase min-h-[44px] sm:min-h-0 flex items-center justify-center sm:justify-start"
             >
               {status === "loading" ? "WRITING…" : isDuplicate ? "ALREADY GENERATED" : "GENERATE →"}
             </button>
           </div>
           <div
-            className={`mt-3.5 text-xs min-h-[16px] ${
+            className={`mt-3.5 text-xs min-h-[16px] text-center ${
               status === "error" ? "text-[#d6a89a]" : "text-[#55534c]"
             }`}
           >
@@ -264,7 +258,7 @@ export default function ScriptFactory() {
         {status === "loading" && (
           <div
             aria-hidden="true"
-            className="w-[min(560px,88vw)] mx-auto mt-4 h-px bg-[#f3f1ea]/10 relative overflow-hidden"
+            className="w-full max-w-[560px] mx-auto mt-4 h-px bg-[#f3f1ea]/10 relative overflow-hidden"
           >
             <div
               ref={processingBarRef}
@@ -276,55 +270,55 @@ export default function ScriptFactory() {
 
       {/* Main Response Output Container */}
       {status === "done" && (
-        <section ref={resultsRef} className="w-full px-6 pb-36 relative z-10 transition-all duration-300">
+        <section ref={resultsRef} className="w-full px-4 sm:px-6 pb-24 sm:pb-36 relative z-10 transition-all duration-300">
           {scenes.length === 0 ? (
             <div className="text-center py-20 px-6 text-[#8f8c82] text-sm">
               No scenes came back for this topic. Try rephrasing it.
             </div>
           ) : (
-            <div className={`grid gap-10 transition-all duration-300 items-start ${isPanelOpen ? "grid-cols-1 lg:grid-cols-2 max-w-[1600px] mx-auto" : "max-w-[760px] mx-auto grid-cols-1"}`}>
+            <div className={`grid gap-8 sm:gap-10 transition-all duration-300 items-start ${isPanelOpen ? "grid-cols-1 lg:grid-cols-2 max-w-[1600px] mx-auto" : "max-w-[760px] mx-auto grid-cols-1"}`}>
 
               {/* SCRIPT COLUMN PANEL */}
-              <div className={`${isPanelOpen ? "bg-[#111310]/40 border border-[#f3f1ea]/10 rounded-lg p-6 lg:p-8 max-h-[75vh] overflow-y-auto" : ""}`}>
-                <div className="flex justify-between items-baseline border-t border-b border-[#f3f1ea]/10 py-4.5 px-1 mb-10 font-mono">
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">Est. runtime</span>
-                    <span className="text-xl tabular-nums text-[#f3f1ea]"><span ref={timeDisplayRef}>00:00</span></span>
+              <div className={`${isPanelOpen ? "bg-[#111310]/40 border border-[#f3f1ea]/10 rounded-lg p-4 sm:p-6 lg:p-8 max-h-[none] lg:max-h-[75vh] lg:overflow-y-auto" : ""}`}>
+                <div className="grid grid-cols-3 gap-2 border-t border-b border-[#f3f1ea]/10 py-4 px-1 mb-8 sm:mb-10 font-mono text-center">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-[#55534c]">Est. runtime</span>
+                    <span className="text-base sm:text-xl tabular-nums text-[#f3f1ea]"><span ref={timeDisplayRef}>00:00</span></span>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">Word count</span>
-                    <span className="text-xl tabular-nums text-[#f3f1ea]"><span ref={wordDisplayRef}>0</span></span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-[#55534c]">Word count</span>
+                    <span className="text-base sm:text-xl tabular-nums text-[#f3f1ea]"><span ref={wordDisplayRef}>0</span></span>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <span className="text-[10px] tracking-[0.2em] uppercase text-[#55534c]">Scenes</span>
-                    <span className="text-xl tabular-nums text-[#f3f1ea]">{scenes.length}</span>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] uppercase text-[#55534c]">Scenes</span>
+                    <span className="text-base sm:text-xl tabular-nums text-[#f3f1ea]">{scenes.length}</span>
                   </div>
                 </div>
 
                 {scenes.map((scene, i) => (
                   <article
                     key={i}
-                    className="sf-scene grid grid-cols-[70px_1fr] gap-5 py-8 border-b border-[#f3f1ea]/10 last:border-none translate-y-7 max-[640px]:grid-cols-1 max-[640px]:gap-2"
+                    className="sf-scene grid grid-cols-1 sm:grid-cols-[70px_1fr] gap-2 sm:gap-5 py-6 sm:py-8 border-b border-[#f3f1ea]/10 last:border-none"
                   >
-                    <div className="font-mono text-[11px] tracking-[0.12em] uppercase text-[#55534c] pt-1.5 max-[640px]:flex max-[640px]:items-baseline max-[640px]:gap-2.5 max-[640px]:pt-0">
+                    <div className="font-mono text-[11px] tracking-[0.12em] uppercase text-[#55534c] sm:pt-1.5 flex sm:block items-baseline gap-2.5">
                       SCENE
-                      <span className="block text-xl text-[#8f8c82] tracking-normal mt-1 max-[640px]:mt-0 max-[640px]:inline">
+                      <span className="inline sm:block text-base sm:text-xl text-[#8f8c82] tracking-normal sm:mt-1">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                     </div>
                     <div>
                       <p
-                        className="font-serif italic text-[clamp(17px,2.2vw,21px)] leading-relaxed text-[#f3f1ea] mb-4 [&>strong]:not-italic [&>strong]:font-medium"
+                        className="font-serif italic text-lg sm:text-[clamp(17px,2.2vw,21px)] leading-relaxed text-[#f3f1ea] mb-4 [&>strong]:not-italic [&>strong]:font-medium break-words"
                         dangerouslySetInnerHTML={renderVoiceover(scene.voiceover)}
                       />
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex gap-2 items-baseline font-mono text-xs">
+                      <div className="flex flex-col gap-2 sm:gap-1.5">
+                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 sm:items-baseline font-mono text-xs">
                           <span className="text-[#55534c] tracking-[0.14em] shrink-0">VISUAL /</span>
-                          <span className="text-[#8f8c82]">{scene.rough_visual_cue}</span>
+                          <span className="text-[#8f8c82] break-words">{scene.rough_visual_cue}</span>
                         </div>
-                        <div className="flex gap-2 items-baseline font-mono text-xs">
+                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 sm:items-baseline font-mono text-xs">
                           <span className="text-[#55534c] tracking-[0.14em] shrink-0">SFX /</span>
-                          <span className="text-[#8f8c82]">{scene.rough_sfx_trigger}</span>
+                          <span className="text-[#8f8c82] break-words">{scene.rough_sfx_trigger}</span>
                         </div>
                       </div>
                     </div>
@@ -332,10 +326,10 @@ export default function ScriptFactory() {
                 ))}
 
                 {!downloadScript && (
-                  <div className="mt-10 flex justify-center">
+                  <div className="mt-8 sm:mt-10 flex justify-center">
                     <button
                       onClick={() => setDownloadScript(true)}
-                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap"
+                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] transition-all py-3 sm:py-1.5 min-h-[44px] sm:min-h-0 flex items-center justify-center whitespace-nowrap"
                     >
                       Download Script
                     </button>
@@ -343,29 +337,33 @@ export default function ScriptFactory() {
                 )}
 
                 {downloadScript && (
-                  <div className="mt-4 flex gap-4 justify-center">
-                    <button onClick={() => downloadText("voiceover.txt", scenes.map((scene) => scene.voiceover).join(" "))}
-                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 border-2 border-white hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-2 px-3 whitespace-nowrap">
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                    <button 
+                      onClick={() => downloadText("voiceover.txt", scenes.map((scene) => scene.voiceover).join(" "))}
+                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 border border-[#f3f1ea]/30 hover:text-[#f3f1ea] transition-all py-3 px-4 min-h-[44px] sm:min-h-0 flex items-center justify-center whitespace-nowrap"
+                    >
                       Voiceover only
                     </button>
-                    <button onClick={() => downloadText("full_script.txt", scenes.map((scene, i) => `Voiceover: ${scene.voiceover}\nVisual: ${scene.rough_visual_cue}\nSFX: ${scene.rough_sfx_trigger}`).join("\n\n"))}
-                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 border-2 border-white hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-2 px-3 whitespace-nowrap">
+                    <button 
+                      onClick={() => downloadText("full_script.txt", scenes.map((scene, i) => `Voiceover: ${scene.voiceover}\nVisual: ${scene.rough_visual_cue}\nSFX: ${scene.rough_sfx_trigger}`).join("\n\n"))}
+                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 border border-[#f3f1ea]/30 hover:text-[#f3f1ea] transition-all py-3 px-4 min-h-[44px] sm:min-h-0 flex items-center justify-center whitespace-nowrap"
+                    >
                       Full script
                     </button>
                   </div>
                 )}
 
                 {activePanel === "none" && (
-                  <div className="mt-10 flex justify-center gap-8">
+                  <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-8">
                     <button
                       onClick={() => setActivePanel("captions")}
-                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap"
+                      className="w-full sm:w-auto font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] border border-[#f3f1ea]/20 sm:border-none py-3 sm:py-1.5 min-h-[44px] sm:min-h-0 flex items-center justify-center whitespace-nowrap"
                     >
                       GENERATE CAPTION →
                     </button>
                     <button
                       onClick={() => setActivePanel("narrator")}
-                      className="font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] hover:translate-x-0.5 transition-all py-1.5 whitespace-nowrap"
+                      className="w-full sm:w-auto font-mono text-xs tracking-[0.14em] text-[#f3f1ea]/90 hover:text-[#f3f1ea] border border-[#f3f1ea]/20 sm:border-none py-3 sm:py-1.5 min-h-[44px] sm:min-h-0 flex items-center justify-center whitespace-nowrap"
                     >
                       GENERATE VOICEOVER →
                     </button>
@@ -373,32 +371,32 @@ export default function ScriptFactory() {
                 )}
               </div>
 
-              {/* SIDE PANEL — either Captions or Narrator, same slot */}
+              {/* SIDE PANEL */}
               {isPanelOpen && (
-                <div className="bg-[#111310] border border-[#f3f1ea]/10 rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 max-h-[75vh] flex flex-col">
-                  <div className="flex items-center justify-between px-6 py-4 border-b border-[#f3f1ea]/10 bg-[#111310] shrink-0">
-                    <span className="font-mono text-[11px] tracking-[0.2em] uppercase text-[#8f8c82]">
+                <div className="bg-[#111310] border border-[#f3f1ea]/10 rounded-lg shadow-2xl overflow-hidden animate-in fade-in slide-in-from-right-4 duration-300 max-h-[none] lg:max-h-[75vh] flex flex-col mt-6 lg:mt-0">
+                  <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-[#f3f1ea]/10 bg-[#111310] shrink-0">
+                    <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-[#8f8c82]">
                       {activePanel === "captions" ? "Caption Generator Workspace" : "Narration Workspace"}
                     </span>
                     <button
                       onClick={() => setActivePanel("none")}
                       aria-label="Back to single column view"
-                      className="font-mono text-xs text-[#8f8c82] hover:text-[#f3f1ea] transition-colors border border-[#f3f1ea]/20 px-2.5 py-1 rounded bg-transparent hover:bg-[#f3f1ea]/5"
+                      className="font-mono text-xs text-[#8f8c82] hover:text-[#f3f1ea] transition-colors border border-[#f3f1ea]/20 px-2.5 py-1.5 rounded bg-transparent min-h-[44px] sm:min-h-0 flex items-center justify-center"
                     >
                       ✕ CLOSE PANEL
                     </button>
                   </div>
-                  <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
+                  <div className="p-4 sm:p-5 overflow-y-auto custom-scrollbar flex-1">
                     {activePanel === "captions" ? (
                       <CaptionGenerator initialScript={captionScript} />
                     ) : (
                       <Narrator
-                              scenes={scenes}
-                              topic={activeTopic}
-                              scriptId={scriptId}
-                              audioBase64={audioBase64}
-                              onAudioReady={setAudioBase64}
-                       />
+                        scenes={scenes}
+                        topic={activeTopic}
+                        scriptId={scriptId}
+                        audioBase64={audioBase64}
+                        onAudioReady={setAudioBase64}
+                      />
                     )}
                   </div>
                 </div>
